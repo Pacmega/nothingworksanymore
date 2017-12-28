@@ -4,25 +4,37 @@
 #include "SimulationCommunicator.h"
 #include "lib/enums.h"
 
+struct savedDoor
+{
+	DoorState savedDoorState;
+	bool topValveOpen;
+	bool middleValveOpen;
+	bool bottomValveOpen;
+};
+
 class CommunicationHandler
 {
 public:
 	CommunicationHandler(int socket);
 	~CommunicationHandler();
 
-	bool sendMsgAck(const char messageToSend[]);
-
 	DoorState getDoorState(DoorSide side);
-	bool getDoorValveOpened(DoorSide side, int row);
-	
+	bool openDoor(DoorSide side);
+	bool closeDoor(DoorSide side);
+	bool stopDoor(DoorSide side);
+	bool getValveOpened(DoorSide side, int row);
+	bool valveOpen(DoorSide side, int row);
+	bool valveClose(DoorSide side, int row);
 	int redLight(int lightLocation);
 	int greenLight(int lightLocation);
 	LightState getLightState(int lightLocation);
-	
 	WaterLevel getWaterLevel();
 	
 private:
 	SimulationCommunicator simulation;
+	char* receivedMessage;
+	savedDoor savedLeftDoor;
+	savedDoor savedRightDoor;
 };
 
 #endif

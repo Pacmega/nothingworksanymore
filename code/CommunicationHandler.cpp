@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "CommunicationHandler.h"
-#include "commands.h"
+#include "lib/commands.h"
 #include "lib/enums.h"
 
 CommunicationHandler::CommunicationHandler(int socket)
@@ -13,19 +13,6 @@ CommunicationHandler::CommunicationHandler(int socket)
 CommunicationHandler::~CommunicationHandler()
 {
 
-}
-
-bool CommunicationHandler::sendMsgAck(const char messageToSend[])
-{
-	bool ack = false;
-	char* receivedMessage = simulation.sendMessage(messageToSend);
-	
-	if (strcmp(receivedMessage, "ack") == 0)
-	{
-		ack = true;
-	}
-
-	return ack;
 }
 
 DoorState CommunicationHandler::getDoorState(DoorSide side)
@@ -42,7 +29,7 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 		messageToSend = GetDoorRight;
 	}
 
-	char* receivedMessage = simulation.sendMessage(messageToSend);
+	receivedMessage = simulation.sendMessage(messageToSend);
 
 	// Switch cases aren't possible for strings sadly.
 	if (strcmp(receivedMessage, "doorLocked") == 0)
@@ -77,7 +64,89 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 	return dState;
 }
 
-bool CommunicationHandler::getDoorValveOpened(DoorSide side, int row)
+bool CommunicationHandler::openDoor(DoorSide side)
+{
+	// Hint: doors with a lock have doorLocked as state at this point
+
+	// TODO: make this
+
+	return false;
+}
+
+bool CommunicationHandler::closeDoor(DoorSide side)
+{
+	// TODO: make this
+
+	// Hint: doors with a lock need to have doorLocked as state at this point
+
+	return false;
+}
+
+bool CommunicationHandler::stopDoor(DoorSide side)
+{
+	// Only stop doors that are currently actually doing something,
+	// and close any opened valves.
+	// If this function is called when a door is already stopped,
+	// the door is instead restored to its original status.
+
+	const char* getStatusMsg;
+
+	if (side == left)
+	{
+		getStatusMsg = GetDoorLeft;
+	}
+	else // side == right
+	{
+		getStatusMsg = GetDoorRight;
+	}
+
+	receivedMessage = simulation.sendMessage(getStatusMsg);
+
+	// Switch cases still aren't possible for strings sadly.
+	// There are only two cases where the door actually needs to be stopped:
+	// when it's closing and when it's opening.
+	if (strcmp(receivedMessage, "doorClosing") == 0 || strcmp(receivedMessage, "doorOpening") == 0)
+	{
+		// Needs to be changed: doorState needs to be saved.
+		if (side == left)
+		{
+			receivedMessage = simulation.sendMessage(DoorLeftStop);
+		}
+		else // side == right
+		{
+			receivedMessage = simulation.sendMessage(DoorRightStop);
+		}
+
+		return -1;
+	}
+	else if (strcmp(receivedMessage, "doorClosed") == 0 || strcmp(receivedMessage, "doorLocked") == 0)
+	{
+		// TODO:
+		// - get valve status
+		// - save which valves were opened
+		// - close any opened ones
+		// - check if the messages were received correctly
+
+		return -1;
+	}
+	else if (strcmp(receivedMessage, "doorStopped") == 0)
+	{
+		// Door was stopped, restore it to the way it was.
+
+		// TODO: implement this
+
+		return -1;
+	}
+	else
+	{
+		// There is nothing to stop.
+		return 0;
+	}
+
+	// return -2; // This shouldn't even be reachable.
+}
+
+bool CommunicationHandler::getValveOpened(DoorSide side, int row)
 {
 	bool opened = false;
 	const char* messageToSend;
@@ -113,7 +182,7 @@ bool CommunicationHandler::getDoorValveOpened(DoorSide side, int row)
 		}
 	}
 
-	char* receivedMessage = simulation.sendMessage(messageToSend);
+	receivedMessage = simulation.sendMessage(messageToSend);
 
 	if (strcmp(receivedMessage, "open") == 0)
 	{
@@ -121,6 +190,20 @@ bool CommunicationHandler::getDoorValveOpened(DoorSide side, int row)
 	}
 
 	return opened;
+}
+
+bool CommunicationHandler::valveOpen(DoorSide side, int row)
+{
+	// TODO: make this
+
+	return false;
+}
+
+bool CommunicationHandler::valveClose(DoorSide side, int row)
+{
+	// TODO: make this
+
+	return false;
 }
 
 int CommunicationHandler::redLight(int lightLocation)
@@ -150,11 +233,11 @@ int CommunicationHandler::redLight(int lightLocation)
 				break;
 		}
 
-		char* receivedMessage = simulation.sendMessage(message1ToSend);
+		receivedMessage = simulation.sendMessage(message1ToSend);
 	
 		if (strcmp(receivedMessage, "ack") == 0)
 		{
-			char* receivedMessage = simulation.sendMessage(message2ToSend);
+			receivedMessage = simulation.sendMessage(message2ToSend);
 			if (strcmp(receivedMessage, "ack") == 0)
 			{
 				return 0; // Success
@@ -202,11 +285,11 @@ int CommunicationHandler::greenLight(int lightLocation)
 				break;
 		}
 
-		char* receivedMessage = simulation.sendMessage(message1ToSend);
+		receivedMessage = simulation.sendMessage(message1ToSend);
 	
 		if (strcmp(receivedMessage, "ack") == 0)
 		{
-			char* receivedMessage = simulation.sendMessage(message2ToSend);
+			receivedMessage = simulation.sendMessage(message2ToSend);
 			if (strcmp(receivedMessage, "ack") == 0)
 			{
 				return 0; // Success
@@ -275,7 +358,7 @@ LightState CommunicationHandler::getLightState(int lightLocation)
 WaterLevel CommunicationHandler::getWaterLevel()
 {
 	WaterLevel wLevel = waterError;
-	char* receivedMessage = simulation.sendMessage(GetWaterLevel);
+	receivedMessage = simulation.sendMessage(GetWaterLevel);
 
 	// Switch cases aren't possible for strings sadly.
 	if (strcmp(receivedMessage, "low") == 0)
