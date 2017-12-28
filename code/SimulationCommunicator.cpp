@@ -1,23 +1,35 @@
 #include <unistd.h>
 #include <string.h>
-#include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <iostream>
 
-#include "networkInterface.h"
-#include "lib/enums.h"
+#include "SimulationCommunicator.h"
 
-networkInterface::networkInterface(int port)
+SimulationCommunicator::SimulationCommunicator(int port)
 {
 	sock = CreateTCPClientSocket (port);
 }
 
-networkInterface::~networkInterface()
+SimulationCommunicator::~SimulationCommunicator()
 {
 	close(sock);
 }
 
-char* networkInterface::receiveMessage()
+char* SimulationCommunicator::sendMessage(const char message[])
+{
+	int size = sizeOfMessage(message);
+
+	if(send(sock, message, size, 0) < 0)
+	{
+		std::cout << "Error sending message\n";
+		return NULL;
+	}
+
+	return receiveMessage();
+}
+
+char* SimulationCommunicator::receiveMessage()
 {
 	for (int j = 0; j < RCVBUFSIZE; ++j)
 	{
@@ -33,22 +45,7 @@ char* networkInterface::receiveMessage()
 	return NULL;
 }
 
-char* networkInterface::sendMessage(const char message[])
-{
-	int size = sizeOfMessage(message);
-
-	if(send(sock, message, size, 0) >= 0)
-	{
-		info_s("verbose mode", message);
-	}
-	else
-	{
-		std::cout << "Error sending message \n";
-	}
-	return receiveMessage();
-}
-
-int networkInterface::sizeOfMessage(const char message[])
+int SimulationCommunicator::sizeOfMessage(const char message[])
 {
     int sizeOfMsg = 0;
     for (int i = 0; i < RCVBUFSIZE; i++)

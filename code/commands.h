@@ -43,40 +43,40 @@ static const char DoorRightGetMiddleValve[] = "GetDoorRightValve2;\0";
 static const char DoorRightGetTopValve[] = "GetDoorRightValve3;\0";
 
 // Enable red traffic lights
-static const char LeftOuterTrafficLightRedOn[] = "SetTrafficLight1Red:on;\0";
-static const char LeftInnerTrafficLightRedOn[] = "SetTrafficLight1Red:on;\0";
-static const char RightInnerTrafficLightRedOn[] = "SetTrafficLight1Red:on;\0";
-static const char RightOuterTrafficLightRedOn[] = "SetTrafficLight1Red:on;\0";
+static const char TrafficLight1RedOn[] = "SetTrafficLight1Red:on;\0";
+static const char TrafficLight2RedOn[] = "SetTrafficLight1Red:on;\0";
+static const char TrafficLight3RedOn[] = "SetTrafficLight1Red:on;\0";
+static const char TrafficLight4RedOn[] = "SetTrafficLight1Red:on;\0";
 
 // Disable red traffic lights
-static const char LeftOuterTrafficLightRedOff[] = "SetTrafficLight1Red:off;\0";
-static const char LeftInnerTrafficLightRedOff[] = "SetTrafficLight1Red:off;\0";
-static const char RightInnerTrafficLightRedOff[] = "SetTrafficLight1Red:off;\0";
-static const char RightOuterTrafficLightRedOff[] = "SetTrafficLight1Red:off;\0";
+static const char TrafficLight1RedOff[] = "SetTrafficLight1Red:off;\0";
+static const char TrafficLight2RedOff[] = "SetTrafficLight1Red:off;\0";
+static const char TrafficLight3RedOff[] = "SetTrafficLight1Red:off;\0";
+static const char TrafficLight4RedOff[] = "SetTrafficLight1Red:off;\0";
 
 // Enable green traffic lights
-static const char LeftOuterTrafficLightGreenOn[] = "SetTrafficLight1Green:on;\0";
-static const char LeftInnerTrafficLightGreenOn[] = "SetTrafficLight2Green:on;\0";
-static const char RightInnerTrafficLightGreenOn[] = "SetTrafficLight3Green:on;\0";
-static const char RightOuterTrafficLightGreenOn[] = "SetTrafficLight4Green:on;\0";
+static const char TrafficLight1GreenOn[] = "SetTrafficLight1Green:on;\0";
+static const char TrafficLight2GreenOn[] = "SetTrafficLight2Green:on;\0";
+static const char TrafficLight3GreenOn[] = "SetTrafficLight3Green:on;\0";
+static const char TrafficLight4GreenOn[] = "SetTrafficLight4Green:on;\0";
 
 // Disable green traffic lights
-static const char LeftOuterTrafficLightGreenOff[] = "SetTrafficLight1Green:off;\0";
-static const char LeftInnerTrafficLightGreenOff[] = "SetTrafficLight2Green:off;\0";
-static const char RightInnerTrafficLightGreenOff[] = "SetTrafficLight3Green:off;\0";
-static const char RightOuterTrafficLightGreenOff[] = "SetTrafficLight4Green:off;\0";
+static const char TrafficLight1GreenOff[] = "SetTrafficLight1Green:off;\0";
+static const char TrafficLight2GreenOff[] = "SetTrafficLight2Green:off;\0";
+static const char TrafficLight3GreenOff[] = "SetTrafficLight3Green:off;\0";
+static const char TrafficLight4GreenOff[] = "SetTrafficLight4Green:off;\0";
 
 // Get red traffic light status
-static const char LeftOuterTrafficLightRedStatus[] = "GetTrafficLight1Red;\0";
-static const char LeftInnerTrafficLightRedStatus[] = "GetTrafficLight2Red;\0";
-static const char RightInnerTrafficLightRedStatus[] = "GetTrafficLight3Red;\0";
-static const char RightOuterTrafficLightRedStatus[] = "GetTrafficLight4Red;\0";
+static const char TrafficLight1RedStatus[] = "GetTrafficLight1Red;\0";
+static const char TrafficLight2RedStatus[] = "GetTrafficLight2Red;\0";
+static const char TrafficLight3RedStatus[] = "GetTrafficLight3Red;\0";
+static const char TrafficLight4RedStatus[] = "GetTrafficLight4Red;\0";
 
 // Get green traffic light status
-static const char LeftOuterTrafficLightGreenStatus[] = "GetTrafficLight1Green;\0";
-static const char LeftInnerTrafficLightGreenStatus[] = "GetTrafficLight2Green;\0";
-static const char RightInnerTrafficLightGreenStatus[] = "GetTrafficLight3Green;\0";
-static const char RightOuterTrafficLightGreenStatus[] = "GetTrafficLight4Green;\0";
+static const char TrafficLight1GreenStatus[] = "GetTrafficLight1Green;\0";
+static const char TrafficLight2GreenStatus[] = "GetTrafficLight2Green;\0";
+static const char TrafficLight3GreenStatus[] = "GetTrafficLight3Green;\0";
+static const char TrafficLight4GreenStatus[] = "GetTrafficLight4Green;\0";
 
 static const char GetWaterLevel[] = "GetWaterLevel;\0";
 

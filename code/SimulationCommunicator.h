@@ -1,17 +1,16 @@
-#ifndef NETWORKINTERFACE_H_
-#define NETWORKINTERFACE_H_ 
+#ifndef SIMULATIONCOMMUNICATOR_H_
+#define SIMULATIONCOMMUNICATOR_H_ 
 
-#include "lib/auxiliary.h"					// Used to handle arguments in the terminal
 #include "lib/createTCPClientSocket.h"		// Used to create the TCP client socket
 #include "lib/enums.h"
 
 #define RCVBUFSIZE 32   /* Size of receive buffer */
 
-class networkInterface
+class SimulationCommunicator
 {
 public:
-	networkInterface(int port);
-	~networkInterface();
+	SimulationCommunicator(int port);
+	~SimulationCommunicator();
 
 	char* sendMessage(const char message[]);
 

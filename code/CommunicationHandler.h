@@ -1,7 +1,7 @@
 #ifndef COMMUNICATIONHANDLER_H_
-#define COMMUNICATIONHANDLER_H_ value
+#define COMMUNICATIONHANDLER_H_
 
-#include "NetworkInterface.h"
+#include "SimulationCommunicator.h"
 #include "lib/enums.h"
 
 class CommunicationHandler
@@ -10,15 +10,19 @@ public:
 	CommunicationHandler(int socket);
 	~CommunicationHandler();
 
-	bool sendMsgAck(char* messageToSend);
+	bool sendMsgAck(const char messageToSend[]);
+
+	DoorState getDoorState(DoorSide side);
 	bool getDoorValveOpened(DoorSide side, int row);
-	WaterLevel getWaterLevel(char* messageToSend);
-	DoorState getDoorState(char* messageToSend);
-	LightState getLightState(char* messageToSend);
 	
+	int redLight(int lightLocation);
+	int greenLight(int lightLocation);
+	LightState getLightState(int lightLocation);
+	
+	WaterLevel getWaterLevel();
 	
 private:
-	NetworkInterface interface;
+	SimulationCommunicator simulation;
 };
 
 #endif

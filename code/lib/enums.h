@@ -1,7 +1,7 @@
 #ifndef ENUMS_H_
 #define ENUMS_H_
 
-enum waterLevel
+enum WaterLevel
 {
 	low,
 	belowValve2,
@@ -11,7 +11,7 @@ enum waterLevel
 	waterError
 };
 
-enum doorState
+enum DoorState
 {
 	doorLocked,
 	doorClosed,
@@ -23,24 +23,29 @@ enum doorState
 	doorStateError
 };
 
-enum doorType
+enum DoorType
 {
 	noLock,
-	fastLock, // Has to be locked fast, otherwise it breaks the motor.
-	doorTypeError
+	fastLock // Has to be locked fast, otherwise it breaks the motor.
 };
 
-enum motorType
+enum MotorType
 {
 	continuous,
-	pulse,
-	motorError
+	pulse
 };
 
-enum doorSide
+enum DoorSide
 {
 	left,
 	right
+};
+
+enum LightState
+{
+	redLightOn,
+	greenLightOn,
+	lightError
 };
 
 #endif
