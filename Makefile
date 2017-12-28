@@ -21,10 +21,8 @@ CC = g++
 cm: clean sluice
 	
 sluice: $(FILES) Makefile $(HEADERS) 
-	@$(CC) $(CFLAGS) $(FILES) $(LIB) $(CFLAGS) $(TARGET)
+	@$(CC) $(FILES) $(LIB) $(CFLAGS) $(TARGET)
 
 clean:
 	-rm -f *.o
 	-rm -f $(TARGET)
-
-cm: clean sluice
