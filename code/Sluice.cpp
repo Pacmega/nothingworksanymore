@@ -52,3 +52,10 @@ int Sluice::allowExit(DoorSide side)
 		return rightDoor.allowExit();
 	}
 }
+
+// int main(int argc, char const *argv[])
+// {
+// 	Sluice henk = new Sluice(5555);
+// 	std::cout << henk.cHandler.getDoorState(left) << std::endl;
+// 	return 0;
+// }

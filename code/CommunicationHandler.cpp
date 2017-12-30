@@ -1004,4 +1004,3 @@ WaterLevel CommunicationHandler::getWaterLevel()
 
 	return wLevel;
 }
-

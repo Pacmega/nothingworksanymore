@@ -20,12 +20,13 @@ SimulationCommunicator::~SimulationCommunicator()
 
 char* SimulationCommunicator::sendMessage(const char message[])
 {
-	std::cout << "[DBG] Message to send (SimulationCommunicator): " << message << std::endl;
-	int size = sizeOfMessage(message);
+	char testString[] = "GetDoorLeft;";
+	std::cout << "[DBG] Message to send (SimulationCommunicator): " << testString << std::endl;
+	int size = sizeOfMessage(testString);
 	std::cout << "[DBG] Size: " << size << std::endl;
 	std::cout << "Sending to: " << sock << std::endl;
 
-	if(send(sock, message, size, 0) < 0)
+	if(send(sock, "GetDoorLeft;", size, 0) < 0)
 	{
 		std::cout << "Error sending message\n";
 		return NULL;
