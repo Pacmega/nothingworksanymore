@@ -1,8 +1,10 @@
+#include <iostream>
+
 #include "Door.h"
 #include "lib/enums.h"
 #include "CommunicationHandler.h"
 
-Door::Door(CommunicationHandler existingHandler, DoorType Type, DoorSide Side, MotorType Motor)
+Door::Door(CommunicationHandler existingHandler, DoorType Type, DoorSide Side)
 	: cHandler(existingHandler)
 	, lightInside(existingHandler, (Side==left) ? 1 : 3)
 	, lightOutside(existingHandler, (Side==left) ? 2 : 4)
@@ -72,11 +74,13 @@ int Door::allowExit()
 
 int Door::allowEntry()
 {
+	std::cout << "[DBG] Door::allowEntry - getDoorState\n";
 	DoorState currentState = cHandler.getDoorState(side);
 	int rtnval;
 
 	if (currentState == doorOpen)
 	{
+		std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door was open)\n";
 		return lightOutside.greenLight();
 	}
 	else if (currentState == doorClosed || currentState == doorLocked)
@@ -88,6 +92,7 @@ int Door::allowEntry()
 		{
 			case 0:
 				// Door has been opened
+				std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door has been opened)\n";
 				return lightOutside.greenLight();
 			case -1:
 				return -3; // openDoor not acknowledged

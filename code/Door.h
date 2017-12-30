@@ -8,8 +8,15 @@
 
 class Door
 {
+private:
+	bool messageReceived;
+	bool interruptCaught;
+	CommunicationHandler cHandler;
+	DoorType type;
+	DoorSide side;	
+
 public:
-	Door(CommunicationHandler existingHandler, DoorType Type, DoorSide Side, MotorType Motor);
+	Door(CommunicationHandler existingHandler, DoorType Type, DoorSide Side);
 	~Door();
 	
 	void interruptReaction();
@@ -19,13 +26,6 @@ public:
 	int closeDoor();
 	int stopDoor();
 
-private:
-	bool messageReceived;
-	bool interruptCaught;
-	CommunicationHandler cHandler;
-	DoorType type;
-	DoorSide side;
-	MotorType motor;
 	TrafficLight lightInside;
 	TrafficLight lightOutside;
 	ValveRow topValves;

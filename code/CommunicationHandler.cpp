@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string.h>
 
 #include "CommunicationHandler.h"
@@ -7,6 +8,7 @@
 CommunicationHandler::CommunicationHandler(int socket)
 	: simulation(SimulationCommunicator(socket))
 {
+	std::cout << "[DBG] cHandler creating SimulationCommunicator with socket " << socket << std::endl;
 	savedLeftDoor.savedDoorState = doorStateError;
 	savedLeftDoor.topValveOpen = false;
 	savedLeftDoor.middleValveOpen = false;
@@ -37,6 +39,7 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 		messageToSend = GetDoorRight;
 	}
 
+	std::cout << "[DBG] Message to send (cHandler): " << messageToSend << std::endl;
 	receivedMessage = simulation.sendMessage(messageToSend);
 
 	// Switch cases aren't possible for strings sadly.

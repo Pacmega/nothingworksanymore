@@ -29,12 +29,6 @@ enum DoorType
 	fastLock // Has to be locked fast, otherwise it breaks the motor.
 };
 
-enum MotorType
-{
-	continuous,
-	pulse
-};
-
 enum DoorSide
 {
 	left,

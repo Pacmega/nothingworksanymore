@@ -8,7 +8,9 @@
 
 SimulationCommunicator::SimulationCommunicator(int port)
 {
+	std::cout << "SimulationCommunicator being created with port " << port << std::endl;
 	sock = CreateTCPClientSocket (port);
+	std::cout << "Socket returned by CreateTCPClientSocket: " << sock << std::endl;
 }
 
 SimulationCommunicator::~SimulationCommunicator()
@@ -18,7 +20,10 @@ SimulationCommunicator::~SimulationCommunicator()
 
 char* SimulationCommunicator::sendMessage(const char message[])
 {
+	std::cout << "[DBG] Message to send (SimulationCommunicator): " << message << std::endl;
 	int size = sizeOfMessage(message);
+	std::cout << "[DBG] Size: " << size << std::endl;
+	std::cout << "Sending to: " << sock << std::endl;
 
 	if(send(sock, message, size, 0) < 0)
 	{
