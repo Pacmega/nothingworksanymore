@@ -19,6 +19,8 @@ public:
 	~CommunicationHandler();
 
 	DoorState getDoorState(DoorSide side);
+	bool lockDoor(DoorSide side);
+	bool unlockDoor(DoorSide side);
 	bool openDoor(DoorSide side);
 	bool closeDoor(DoorSide side);
 	bool stopDoor(DoorSide side);
@@ -33,6 +35,7 @@ public:
 private:
 	SimulationCommunicator simulation;
 	char* receivedMessage;
+	bool interruptCaught;
 	savedDoor savedLeftDoor;
 	savedDoor savedRightDoor;
 };

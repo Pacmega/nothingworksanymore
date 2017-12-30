@@ -72,53 +72,132 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 	return dState;
 }
 
+bool CommunicationHandler::lockDoor(DoorSide side)
+{
+	if (side == left)
+	{
+		receivedMessage = simulation.sendMessage(DoorLeftLock);
+	}
+	else // side == right
+	{
+		receivedMessage = simulation.sendMessage(DoorRightLock);
+	}
+
+	if (strcmp(receivedMessage, "ack") != 0)
+	{
+		return false; // Message was not acknowledged by the simulator or door could not be locked.
+	}
+	else
+	{
+		return true;
+	}
+}
+
+bool CommunicationHandler::unlockDoor(DoorSide side)
+{
+
+	if (side == left)
+	{
+		receivedMessage = simulation.sendMessage(DoorLeftUnlock);
+	}
+	else // side == right
+	{
+		receivedMessage = simulation.sendMessage(DoorRightUnlock);
+	}
+
+	if (strcmp(receivedMessage, "ack") != 0)
+	{
+		return false; // Message was not acknowledged by the simulator
+	}
+	else
+	{
+		return true;
+	}
+}
+
 bool CommunicationHandler::openDoor(DoorSide side)
 {
 	DoorState currentState = getDoorState(side);
 
-	if (currentState == doorLocked)
+	if (side == left)
 	{
-		if (side == left)
-		{
-			simulation.sendMessage(DoorLeftUnlock);
-		}
-		else // side == right
-		{
-			simulation.sendMessage(DoorRightUnlock);
-		}
+		receivedMessage = simulation.sendMessage(DoorLeftOpen);
+	}
+	else // side == right
+	{
+		receivedMessage = simulation.sendMessage(DoorRightOpen);
 	}
 
-	if (currentState == doorLocked || currentState == doorClosed)
+	if (strcmp(receivedMessage, "ack") != 0)
 	{
-		// FUCK THREADS
-		// FUCK SLUICE
-		// FUCK PRC
-		// FUCK ES
-		// I'M FUCKING DONE WITH THIS
-		// FUCK HOLIDAYS I GUESS
-		// FUCK TECHNOLOGY
-		// FUCK EVERYTHING
-		// ALSO TODO: THIS THING
+		return false; // Message was not acknowledged by the simulator
 	}
 
-	// TODO: make this
+	do
+	{
+		if (currentState == doorStopped)
+		{
+			if (side == left)
+			{
+				receivedMessage = simulation.sendMessage(DoorLeftOpen);
+			}
+			else // side == right
+			{
+				receivedMessage = simulation.sendMessage(DoorRightOpen);
+			}
 
+			if (strcmp(receivedMessage, "ack") != 0)
+			{
+				return false; // Message was not acknowledged by the simulator
+			}
+		}
+		currentState = getDoorState(side);
+	} while (!interruptCaught && currentState != doorOpen);
+		
 	return false;
 }
 
 bool CommunicationHandler::closeDoor(DoorSide side)
 {
-	// TODO: make this
-
-	// Hint: doors with a lock need to have doorLocked as state at this point
+	// Door should deal with locking itself.
 
 	DoorState currentState = getDoorState(side);
 
-	if (currentState == doorLocked || currentState == doorClosed)
+	if (side == left)
 	{
-		return true; // Done.
+		receivedMessage = simulation.sendMessage(DoorLeftClose);
+	}
+	else // side == right
+	{
+		receivedMessage = simulation.sendMessage(DoorRightClose);
 	}
 
+	if (strcmp(receivedMessage, "ack") != 0)
+	{
+		return false; // Message was not acknowledged by the simulator
+	}
+
+	do
+	{
+		if (currentState == doorStopped)
+		{
+			if (side == left)
+			{
+				receivedMessage = simulation.sendMessage(DoorLeftClose);
+			}
+			else // side == right
+			{
+				receivedMessage = simulation.sendMessage(DoorRightClose);
+			}
+
+			if (strcmp(receivedMessage, "ack") != 0)
+			{
+				return false; // Message was not acknowledged by the simulator
+			}
+		}
+		currentState = getDoorState(side);
+	} while (!interruptCaught && currentState != doorClosed);
+		
 	return false;
 }
 
@@ -228,19 +307,11 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 								{
 									return 0; // Success
 								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
 							}
 							else
 							{
 								return 0; // Success
 							}
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
 						}
 					}
 					else if (savedLeftDoor.bottomValveOpen)
@@ -250,19 +321,11 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 						{
 							return 0; // Success
 						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
 					}
 					else
 					{
 						return 0; // Success
 					}
-				}
-				else
-				{
-					return -1; // Message was not acknowledged by simulator
 				}
 			}
 			else if (savedLeftDoor.middleValveOpen)
@@ -277,19 +340,11 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 						{
 							return 0; // Success
 						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
 					}
 					else
 					{
 						return 0; // Success
 					}
-				}
-				else
-				{
-					return -1; // Message was not acknowledged by simulator
 				}
 			}
 			else if (savedLeftDoor.bottomValveOpen)
@@ -298,10 +353,6 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 				if (messageReceived)
 				{
 					return 0; // Success
-				}
-				else
-				{
-					return -1; // Message was not acknowledged by simulator
 				}
 			}
 			else
@@ -342,19 +393,11 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 								{
 									return 0; // Success
 								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
 							}
 							else
 							{
 								return 0; // Success
 							}
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
 						}
 					}
 					else if (savedRightDoor.bottomValveOpen)
@@ -364,19 +407,11 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 						{
 							return 0; // Success
 						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
 					}
 					else
 					{
 						return 0; // Success
 					}
-				}
-				else
-				{
-					return -1; // Message was not acknowledged by simulator
 				}
 			}
 			else if (savedRightDoor.middleValveOpen)
@@ -391,19 +426,11 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 						{
 							return 0; // Success
 						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
 					}
 					else
 					{
 						return 0; // Success
 					}
-				}
-				else
-				{
-					return -1; // Message was not acknowledged by simulator
 				}
 			}
 			else if (savedRightDoor.bottomValveOpen)
@@ -413,16 +440,15 @@ bool CommunicationHandler::stopDoor(DoorSide side)
 				{
 					return 0; // Success
 				}
-				else
-				{
-					return -1; // Message was not acknowledged by simulator
-				}
 			}
 			else
 			{
 				return 0; // No valves to close.
 			}
 		}
+
+		// If this point is reached, somewhere along the way the simulator told the user to fuck off. (nack)
+		return -1;
 	}
 	else if (strcmp(receivedMessage, "doorStopped") == 0)
 	{
