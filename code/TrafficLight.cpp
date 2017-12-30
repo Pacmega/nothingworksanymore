@@ -22,7 +22,7 @@ LightState TrafficLight::getLightState()
 
 int TrafficLight::redLight()
 {
-	int lightsChanged = -3; // Impossible to return
+	int lightsChanged;
 
 	switch(getLightState())
 	{
@@ -55,7 +55,7 @@ int TrafficLight::redLight()
 
 int TrafficLight::greenLight()
 {
-	int lightsChanged = -3; // Impossible to return
+	int lightsChanged;
 
 	switch(getLightState())
 	{

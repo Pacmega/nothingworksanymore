@@ -2,12 +2,12 @@
 #define VALVEROW_H_
 
 #include "CommunicationHandler.h"
-#include "enums.h"
+#include "lib/enums.h"
 
 class ValveRow
 {
 public:
-	ValveRow();
+	ValveRow(CommunicationHandler existingHandler, int Row, DoorSide Side);
 	~ValveRow();
 
 	bool openValveRow();
@@ -15,6 +15,7 @@ public:
 	bool getValveRowOpened();
 
 private:
+	CommunicationHandler cHandler;
 	bool messageReceived;
 	int row;
 	DoorSide side;	

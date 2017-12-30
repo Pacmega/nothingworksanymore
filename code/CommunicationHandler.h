@@ -35,7 +35,6 @@ public:
 private:
 	SimulationCommunicator simulation;
 	char* receivedMessage;
-	bool interruptCaught;
 	savedDoor savedLeftDoor;
 	savedDoor savedRightDoor;
 };

@@ -95,7 +95,6 @@ bool CommunicationHandler::lockDoor(DoorSide side)
 
 bool CommunicationHandler::unlockDoor(DoorSide side)
 {
-
 	if (side == left)
 	{
 		receivedMessage = simulation.sendMessage(DoorLeftUnlock);
@@ -117,8 +116,6 @@ bool CommunicationHandler::unlockDoor(DoorSide side)
 
 bool CommunicationHandler::openDoor(DoorSide side)
 {
-	DoorState currentState = getDoorState(side);
-
 	if (side == left)
 	{
 		receivedMessage = simulation.sendMessage(DoorLeftOpen);
@@ -128,40 +125,19 @@ bool CommunicationHandler::openDoor(DoorSide side)
 		receivedMessage = simulation.sendMessage(DoorRightOpen);
 	}
 
-	if (strcmp(receivedMessage, "ack") != 0)
+	if (strcmp(receivedMessage, "ack") == 0)
+	{
+		return true; // Door was told to open.
+	}
+	else
 	{
 		return false; // Message was not acknowledged by the simulator
 	}
-
-	do
-	{
-		if (currentState == doorStopped)
-		{
-			if (side == left)
-			{
-				receivedMessage = simulation.sendMessage(DoorLeftOpen);
-			}
-			else // side == right
-			{
-				receivedMessage = simulation.sendMessage(DoorRightOpen);
-			}
-
-			if (strcmp(receivedMessage, "ack") != 0)
-			{
-				return false; // Message was not acknowledged by the simulator
-			}
-		}
-		currentState = getDoorState(side);
-	} while (!interruptCaught && currentState != doorOpen);
-		
-	return false;
 }
 
 bool CommunicationHandler::closeDoor(DoorSide side)
 {
 	// Door should deal with locking itself.
-
-	DoorState currentState = getDoorState(side);
 
 	if (side == left)
 	{
@@ -172,41 +148,28 @@ bool CommunicationHandler::closeDoor(DoorSide side)
 		receivedMessage = simulation.sendMessage(DoorRightClose);
 	}
 
-	if (strcmp(receivedMessage, "ack") != 0)
+	if (strcmp(receivedMessage, "ack") == 0)
+	{
+		return true; // Door was told to close.
+	}
+	else
 	{
 		return false; // Message was not acknowledged by the simulator
 	}
-
-	do
-	{
-		if (currentState == doorStopped)
-		{
-			if (side == left)
-			{
-				receivedMessage = simulation.sendMessage(DoorLeftClose);
-			}
-			else // side == right
-			{
-				receivedMessage = simulation.sendMessage(DoorRightClose);
-			}
-
-			if (strcmp(receivedMessage, "ack") != 0)
-			{
-				return false; // Message was not acknowledged by the simulator
-			}
-		}
-		currentState = getDoorState(side);
-	} while (!interruptCaught && currentState != doorClosed);
-		
-	return false;
 }
 
 bool CommunicationHandler::stopDoor(DoorSide side)
 {
+	// TODO: if there is time, move the state saving and recovering to door itself
+
 	// Only stop doors that are currently actually doing something,
 	// and close any opened valves.
 	// If this function is called when a door is already stopped,
 	// the door is instead restored to its original status.
+
+	// And yes, this function probably does way too much.
+	// Consequence of having 0 free time, no vacation, and no weekend to speak of.
+	// Any free time I was basically forced to have only increased stress levels.
 
 	const char* getStatusMsg;
 
