@@ -37,6 +37,7 @@ int Sluice::allowEntry(DoorSide side)
 	}
 	else // side == right
 	{
+		// std::cout << "[DBG] Sluice::allowEntry(" << side << ")\n";
 		return rightDoor.allowEntry();
 	}
 }

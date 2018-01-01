@@ -1,3 +1,4 @@
+#include <iostream>
 #include "lib/enums.h"
 #include "CommunicationHandler.h"
 #include "TrafficLight.h"
@@ -60,27 +61,30 @@ int TrafficLight::greenLight()
 	switch(getLightState())
 	{
 		case greenLightOn:
+			// std::cout << "[DBG] GreenLight on " << std::endl;
 			lightsChanged = 0; // Done. Nothing to change.
+			break;
 		case redLightOn:
-			messageReceived = cHandler->redLight(location);
-			if (messageReceived)
+			// std::cout << "[DBG] GreenLight being turned on" << std::endl;
+			switch (cHandler->greenLight(location))
 			{
-				messageReceived = cHandler->greenLight(location);
-				if (messageReceived)
-				{
+				case 0:
 					lightsChanged = 0; // Success
-				}
-				else
-				{
+					break;
+				case -1:
+					lightsChanged = -1; // One of the messages was not received by the simulator
+					break;
+				case -2:
+					lightsChanged = -2; // Invalid light state received from simulator
+				default:
 					lightsChanged = -1; // Message was not received by simulator
-				}
+					break;
 			}
-			else
-			{
-				lightsChanged = -1; // Message was not received by simulator
-			}
+			break;
 		case lightError:
+			std::cout << "Hecking what " << std::endl;
 			lightsChanged = -2; // Invalid light state received from simulator
+			break;
 	}
 
 	return lightsChanged;

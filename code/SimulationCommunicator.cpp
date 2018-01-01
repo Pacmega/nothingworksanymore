@@ -20,13 +20,13 @@ SimulationCommunicator::~SimulationCommunicator()
 
 char* SimulationCommunicator::sendMessage(const char message[])
 {
-	char testString[] = "GetDoorLeft;";
-	// std::cout << "[DBG] Message to send (SimulationCommunicator): " << testString << std::endl;
-	int size = sizeOfMessage(testString);
+	// char testString[] = "GetDoorLeft;";
+	// std::cout << "[DBG] Message to send (SimulationCommunicator): " << message << std::endl;
+	int size = sizeOfMessage(message);
 	// std::cout << "[DBG] Size: " << size << std::endl;
 	// std::cout << "Sending to: " << sock << std::endl;
 
-	if(send(sock, "GetDoorLeft;", size, 0) < 0)
+	if(send(sock, message, size, 0) < 0)
 	{
 		std::cout << "Error sending message\n";
 		return NULL;
@@ -46,6 +46,7 @@ char* SimulationCommunicator::receiveMessage()
 	{
 		int size = sizeOfMessage(echoBuffer);
 		echoBuffer[size-1] = '\0'; // Remove the semicolon at the end of the received message
+		// std::cout << "[DBG] Message received: " << echoBuffer << std::endl;
 		return echoBuffer;
 	}
 	return NULL;

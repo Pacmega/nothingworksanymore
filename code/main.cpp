@@ -58,21 +58,23 @@ int main(int argc, char const *argv[])
         {
         	case '1':
         		currentSluice = 1;
+                std::cout << "\n==Sluice 1 (standard)==\n";
         		while (choice != '9')
         		{
-        			std::cout << "\n==Sluice 1 (standard)==\n"
-	        		<< "TESTING - [q]	allowEntry Sluice1 (left)\n"
-	        		<< "TESTING - [a]   allowEntry Sluice1 (right)\n"
-	        		<< "[9]   Return to main menu\n"
-	        		<< "Enter your choice: ";
+        			
+	        		std::cout << "[1]	Allow entry from the left\n"
+                              << "[2]   Move boat up/down\n"
+	        		          << "[3]   Allow entry from the right\n"
+	        		          << "[9]   Return to main menu\n"
+	        		          << "Enter your choice: ";
 			    	std::cin >> line;
 			        choice = line[0];
 			        std::cout << std::endl;
 			        switch (choice)
 			        {
-			        	case 'q':
-			        		std::cout << "Allowing entry into sluice." << std::endl;
-                            rtnval = normalSluice1.allowEntry(right);
+			        	case '1':
+			        		std::cout << "Allowing entry into sluice from the left side." << std::endl;
+                            rtnval = normalSluice1.allowEntry(left);
 			        		switch(rtnval)
 			        		{
 			        			case 0:
@@ -83,6 +85,19 @@ int main(int argc, char const *argv[])
 			        				break;
 			        		}
 			        		break;
+                        case '3':
+                            std::cout << "Allowing entry into sluice from the right side." << std::endl;
+                            rtnval = normalSluice1.allowEntry(right);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
 			        	//TODO: add other possible inputs
 			        	default:
 			        		std::cout << "Invalid input: " << choice << std::endl;
@@ -92,18 +107,153 @@ int main(int argc, char const *argv[])
         		break;
         	case '2':
         		currentSluice = 2;
-        		std::cout << "Function returned " << normalSluice1.allowEntry(right) << std::endl;
-        		break;
+        		std::cout << "\n==Sluice 2 (standard)==\n";
+                while (choice != '9')
+                {
+                    
+                    std::cout << "[1]   Allow entry from the left\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow entry from the right\n"
+                              << "[9]   Return to main menu\n"
+                              << "Enter your choice: ";
+                    std::cin >> line;
+                    choice = line[0];
+                    std::cout << std::endl;
+                    switch (choice)
+                    {
+                        case '1':
+                            std::cout << "Allowing entry into sluice from the left side." << std::endl;
+                            rtnval = normalSluice2.allowEntry(left);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
+                        case '3':
+                            std::cout << "Allowing entry into sluice from the right side." << std::endl;
+                            rtnval = normalSluice2.allowEntry(right);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
+                        //TODO: add other possible inputs
+                        default:
+                            std::cout << "Invalid input: " << choice << std::endl;
+                            break;
+                    }
+                }
+                break;
         	case '3':
         		currentSluice = 3;
-        		std::cout << "Function returned " << normalSluice2.allowEntry(left) << std::endl;
-        		break;
+        		std::cout << "\n==Sluice 3 (locking doors)==\n";
+                while (choice != '9')
+                {
+                    
+                    std::cout << "[1]   Allow entry from the left\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow entry from the right\n"
+                              << "[9]   Return to main menu\n"
+                              << "Enter your choice: ";
+                    std::cin >> line;
+                    choice = line[0];
+                    std::cout << std::endl;
+                    switch (choice)
+                    {
+                        case '1':
+                            std::cout << "Allowing entry into sluice from the left side." << std::endl;
+                            rtnval = fastLockSluice.allowEntry(left);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
+                        case '3':
+                            std::cout << "Allowing entry into sluice from the right side." << std::endl;
+                            rtnval = fastLockSluice.allowEntry(right);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
+                        //TODO: add other possible inputs
+                        default:
+                            std::cout << "Invalid input: " << choice << std::endl;
+                            break;
+                    }
+                }
+                break;
         	case '4':
         		currentSluice = 4;
-        		std::cout << "Function returned " << normalSluice2.allowEntry(right) << std::endl;
-        		break;
+        		std::cout << "\n==Sluice 4 (different motor)==\n";
+                while (choice != '9')
+                {
+                    
+                    std::cout << "[1]   Allow entry from the left\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow entry from the right\n"
+                              << "[9]   Return to main menu\n"
+                              << "Enter your choice: ";
+                    std::cin >> line;
+                    choice = line[0];
+                    std::cout << std::endl;
+                    switch (choice)
+                    {
+                        case '1':
+                            std::cout << "Allowing entry into sluice from the left side." << std::endl;
+                            rtnval = pulseMotorSluice.allowEntry(left);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
+                        case '3':
+                            std::cout << "Allowing entry into sluice from the right side." << std::endl;
+                            rtnval = pulseMotorSluice.allowEntry(right);
+                            switch(rtnval)
+                            {
+                                case 0:
+                                    break;
+                                //TODO: add all other possible return values
+                                default:
+                                    std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
+                                    break;
+                            }
+                            break;
+                        //TODO: add other possible inputs
+                        default:
+                            std::cout << "Invalid input: " << choice << std::endl;
+                            break;
+                    }
+                }
+                break;
         	default:
-        		std::cout << "Invalid input: " << choice << std::endl;
+        		std::cout << "Invalid input." << std::endl;
         		break;
         }
     }

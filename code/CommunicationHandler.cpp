@@ -39,9 +39,9 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 		messageToSend = GetDoorRight;
 	}
 
-	std::cout << "[DBG] Message to send: " << messageToSend << std::endl;
+	// std::cout << "[DBG] Message to send: " << messageToSend << std::endl;
 	receivedMessage = simulation.sendMessage(messageToSend);
-	std::cout << "[DBG] Message received: " << receivedMessage << std::endl;
+	
 	// Switch cases aren't possible for strings sadly.
 	if (strcmp(receivedMessage, "doorLocked") == 0)
 	{
@@ -914,20 +914,14 @@ int CommunicationHandler::greenLight(int lightLocation)
 			{
 				return 0; // Success
 			}
-			else
-			{
-				return -1; // Only one of the lights was changed
-			}
-		}
-		else
-		{
-			return -2; // None of the lights were changed.
 		}
 	}
 	else
 	{
-		return -3; // Invalid lightLocation was passed
+		return -2; // Invalid lightLocation was passed
 	}
+
+	return -1; // One of the messages was not received by the simulator
 }
 
 LightState CommunicationHandler::getLightState(int lightLocation)
@@ -959,14 +953,17 @@ LightState CommunicationHandler::getLightState(int lightLocation)
 				break;	
 		}
 
-		char* redLightReceived = simulation.sendMessage(redLightMessage);
-		char* greenLightReceived = simulation.sendMessage(greenLightMessage);
+		std::string redLightReceived = simulation.sendMessage(redLightMessage);
+		std::string greenLightReceived = simulation.sendMessage(greenLightMessage);
 
-		if (strcmp(redLightReceived, "on") == 0 && strcmp(greenLightReceived, "off") == 0)
+		std::cout << "Red light state: " << redLightReceived << std::endl;
+		std::cout << "Green light state: " << greenLightReceived << std::endl;
+
+		if (redLightReceived == "on" && greenLightReceived == "off")
 		{
 			lState = redLightOn;
 		}
-		else if (strcmp(redLightReceived, "off") == 0 && strcmp(greenLightReceived, "on") == 0)
+		else if (redLightReceived == "off" && greenLightReceived == "on")
 		{
 			lState = greenLightOn;
 		}

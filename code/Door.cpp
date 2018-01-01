@@ -6,14 +6,16 @@
 
 Door::Door(CommunicationHandler* existingHandler, DoorType Type, DoorSide Side)
 	: cHandler(existingHandler)
-	, lightInside(existingHandler, (Side==left) ? 1 : 3)
-	, lightOutside(existingHandler, (Side==left) ? 2 : 4)
+	, lightInside(existingHandler, (Side==left) ? 2 : 3)
+	, lightOutside(existingHandler, (Side==left) ? 1 : 4)
 	, topValves(cHandler, 3, Side)
 	, middleValves(cHandler, 2, Side)
 	, bottomValves(cHandler, 1, Side)
 {
 	interruptCaught = false;
 	messageReceived = false;
+	side = Side;
+	type = Type;
 }
 
 Door::~Door()
@@ -74,7 +76,7 @@ int Door::allowExit()
 
 int Door::allowEntry()
 {
-	// std::cout << "[DBG] Door::allowEntry - getDoorState\n";
+	// std::cout << "[DBG] This door's location is " << side;
 	DoorState currentState = cHandler->getDoorState(side);
 	int rtnval;
 
@@ -85,6 +87,8 @@ int Door::allowEntry()
 	}
 	else if (currentState == doorClosed || currentState == doorLocked)
 	{
+		std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
+		std::cout << "[DBG] Got door type " << type << std::endl;
 		rtnval = openDoor();
 		switch (rtnval)
 		// Because greenLight has its own return values, we need to be change
@@ -117,12 +121,17 @@ int Door::openDoor()
 	// while the right door can only be opened when waterLevel = high.
 
 	WaterLevel currentWLevel = cHandler->getWaterLevel();
+	std::cout << "[DBG] Door side: " << side << std::endl;
+	std::cout << "[DBG] Water level: " << currentWLevel << std::endl;
 	if (!((side == left && currentWLevel == low) || (side == right && currentWLevel == high)))
 	{
 		// The water is not at the right level to open the left door,
 		// but the water also isn't at the right level to open the right door
 		return -3; // Water level invalid for opening door
 	}
+
+	std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
+	std::cout << "[DBG] Got door type " << type << std::endl;
 
 	if (type == fastLock)
 	{
