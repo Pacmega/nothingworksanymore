@@ -4,7 +4,7 @@
 #include "lib/enums.h"
 #include "CommunicationHandler.h"
 
-Door::Door(CommunicationHandler existingHandler, DoorType Type, DoorSide Side)
+Door::Door(CommunicationHandler* existingHandler, DoorType Type, DoorSide Side)
 	: cHandler(existingHandler)
 	, lightInside(existingHandler, (Side==left) ? 1 : 3)
 	, lightOutside(existingHandler, (Side==left) ? 2 : 4)
@@ -38,7 +38,7 @@ void Door::interruptReaction()
 
 int Door::allowExit()
 {
-	DoorState currentState = cHandler.getDoorState(side);
+	DoorState currentState = cHandler->getDoorState(side);
 	int rtnval;
 
 	if (currentState == doorOpen)
@@ -74,13 +74,13 @@ int Door::allowExit()
 
 int Door::allowEntry()
 {
-	std::cout << "[DBG] Door::allowEntry - getDoorState\n";
-	DoorState currentState = cHandler.getDoorState(side);
+	// std::cout << "[DBG] Door::allowEntry - getDoorState\n";
+	DoorState currentState = cHandler->getDoorState(side);
 	int rtnval;
 
 	if (currentState == doorOpen)
 	{
-		std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door was open)\n";
+		// std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door was open)\n";
 		return lightOutside.greenLight();
 	}
 	else if (currentState == doorClosed || currentState == doorLocked)
@@ -92,7 +92,7 @@ int Door::allowEntry()
 		{
 			case 0:
 				// Door has been opened
-				std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door has been opened)\n";
+				// std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door has been opened)\n";
 				return lightOutside.greenLight();
 			case -1:
 				return -3; // openDoor not acknowledged
@@ -116,7 +116,7 @@ int Door::openDoor()
 	// We can assume the left door can be opened when waterLevel = low,
 	// while the right door can only be opened when waterLevel = high.
 
-	WaterLevel currentWLevel = cHandler.getWaterLevel();
+	WaterLevel currentWLevel = cHandler->getWaterLevel();
 	if (!((side == left && currentWLevel == low) || (side == right && currentWLevel == high)))
 	{
 		// The water is not at the right level to open the left door,
@@ -127,7 +127,7 @@ int Door::openDoor()
 	if (type == fastLock)
 	{
 		// Door is locked
-		messageReceived = cHandler.unlockDoor(side);
+		messageReceived = cHandler->unlockDoor(side);
 
 		if (!messageReceived)
 		{
@@ -136,25 +136,25 @@ int Door::openDoor()
 		// Door is not locked
 	}
 
-	messageReceived = cHandler.openDoor(side);
+	messageReceived = cHandler->openDoor(side);
 	if (!messageReceived)
 	{
 		return -1; // Message was not acknowledged by the simulator
 	}
 
-	DoorState currentState = cHandler.getDoorState(side);
+	DoorState currentState = cHandler->getDoorState(side);
 	do
 	{
 		if (currentState == doorStopped)
 		{
-			messageReceived = cHandler.openDoor(side);
+			messageReceived = cHandler->openDoor(side);
 			
 			if (!messageReceived)
 			{
 				return -1; // Message was not acknowledged by the simulator
 			}
 		}
-		currentState = cHandler.getDoorState(side);
+		currentState = cHandler->getDoorState(side);
 	} while (!interruptCaught && currentState != doorOpen);
 
 	if (currentState != doorOpen)
@@ -169,25 +169,25 @@ int Door::openDoor()
 
 int Door::closeDoor()
 {
-	messageReceived = cHandler.closeDoor(side);
+	messageReceived = cHandler->closeDoor(side);
 	if (!messageReceived)
 	{
 		return -1; // Message was not acknowledged by the simulator
 	}
 
-	DoorState currentState = cHandler.getDoorState(side);
+	DoorState currentState = cHandler->getDoorState(side);
 	do
 	{
 		if (currentState == doorStopped)
 		{
-			messageReceived = cHandler.closeDoor(side);
+			messageReceived = cHandler->closeDoor(side);
 			
 			if (!messageReceived)
 			{
 				return false; // Message was not acknowledged by the simulator
 			}
 		}
-		currentState = cHandler.getDoorState(side);
+		currentState = cHandler->getDoorState(side);
 	} while (!interruptCaught && currentState != doorClosed);
 
 	if (currentState != doorClosed)
@@ -202,7 +202,7 @@ int Door::closeDoor()
 	if (type == fastLock)
 	{
 		// Door should be locked
-		messageReceived = cHandler.lockDoor(side);
+		messageReceived = cHandler->lockDoor(side);
 
 		if (!messageReceived)
 		{
@@ -215,6 +215,6 @@ int Door::closeDoor()
 int Door::stopDoor()
 {
 	// The CommunicationHandler part does way too much for stopping.
-	cHandler.stopDoor(side);
+	cHandler->stopDoor(side);
 	return -1;
 }

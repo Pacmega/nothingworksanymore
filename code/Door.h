@@ -11,12 +11,12 @@ class Door
 private:
 	bool messageReceived;
 	bool interruptCaught;
-	CommunicationHandler cHandler;
+	CommunicationHandler* cHandler;
 	DoorType type;
 	DoorSide side;	
 
 public:
-	Door(CommunicationHandler existingHandler, DoorType Type, DoorSide Side);
+	Door(CommunicationHandler* existingHandler, DoorType Type, DoorSide Side);
 	~Door();
 	
 	void interruptReaction();

@@ -8,7 +8,7 @@
 CommunicationHandler::CommunicationHandler(int socket)
 	: simulation(SimulationCommunicator(socket))
 {
-	std::cout << "[DBG] cHandler creating SimulationCommunicator with socket " << socket << std::endl;
+	// std::cout << "[DBG] cHandler creating SimulationCommunicator with socket " << socket << std::endl;
 	savedLeftDoor.savedDoorState = doorStateError;
 	savedLeftDoor.topValveOpen = false;
 	savedLeftDoor.middleValveOpen = false;
@@ -39,9 +39,9 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 		messageToSend = GetDoorRight;
 	}
 
-	std::cout << "[DBG] Message to send (cHandler): " << messageToSend << std::endl;
+	std::cout << "[DBG] Message to send: " << messageToSend << std::endl;
 	receivedMessage = simulation.sendMessage(messageToSend);
-
+	std::cout << "[DBG] Message received: " << receivedMessage << std::endl;
 	// Switch cases aren't possible for strings sadly.
 	if (strcmp(receivedMessage, "doorLocked") == 0)
 	{
@@ -1004,3 +1004,10 @@ WaterLevel CommunicationHandler::getWaterLevel()
 
 	return wLevel;
 }
+
+// int main(int argc, char const *argv[])
+// {
+// 	CommunicationHandler henk(5555);
+// 	std::cout << henk.getDoorState(left) << std::endl;
+// 	return 0;
+// }

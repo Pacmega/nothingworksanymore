@@ -39,6 +39,7 @@ int main(int argc, char const *argv[])
 
 	int choice = ' ';
 	
+    int rtnval;
     char line[1];
     while (choice != 'q')
     {
@@ -69,15 +70,16 @@ int main(int argc, char const *argv[])
 			        std::cout << std::endl;
 			        switch (choice)
 			        {
-			        	case 'e':
+			        	case 'q':
 			        		std::cout << "Allowing entry into sluice." << std::endl;
-			        		switch(normalSluice1.allowEntry(right))
+                            rtnval = normalSluice1.allowEntry(right);
+			        		switch(rtnval)
 			        		{
 			        			case 0:
 			        				break;
 			        			//TODO: add all other possible return values
 			        			default:
-			        				std::cout << "Warning: sluice returned an unknown value." << std::endl;
+			        				std::cout << "Warning - sluice returned an unknown value: " << rtnval << std::endl;
 			        				break;
 			        		}
 			        		break;

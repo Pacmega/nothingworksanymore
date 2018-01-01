@@ -2,7 +2,7 @@
 #include "CommunicationHandler.h"
 #include "TrafficLight.h"
 
-TrafficLight::TrafficLight(CommunicationHandler existingHandler, int Location)
+TrafficLight::TrafficLight(CommunicationHandler* existingHandler, int Location)
 	: cHandler(existingHandler)
 {
 	location = Location;
@@ -17,7 +17,7 @@ LightState TrafficLight::getLightState()
 {
 	// Calls the getLightState function from the Communication Handler,
 	// passing it the location of this specific light.
-	return cHandler.getLightState(location);
+	return cHandler->getLightState(location);
 }
 
 int TrafficLight::redLight()
@@ -29,10 +29,10 @@ int TrafficLight::redLight()
 		case redLightOn:
 			lightsChanged = 0; // Done. Nothing to change.
 		case greenLightOn:
-			messageReceived = cHandler.greenLight(location);
+			messageReceived = cHandler->greenLight(location);
 			if (messageReceived)
 			{
-				messageReceived = cHandler.redLight(location);
+				messageReceived = cHandler->redLight(location);
 				if (messageReceived)
 				{
 					lightsChanged = 0; // Success
@@ -62,10 +62,10 @@ int TrafficLight::greenLight()
 		case greenLightOn:
 			lightsChanged = 0; // Done. Nothing to change.
 		case redLightOn:
-			messageReceived = cHandler.redLight(location);
+			messageReceived = cHandler->redLight(location);
 			if (messageReceived)
 			{
-				messageReceived = cHandler.greenLight(location);
+				messageReceived = cHandler->greenLight(location);
 				if (messageReceived)
 				{
 					lightsChanged = 0; // Success
