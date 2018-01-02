@@ -6,6 +6,14 @@
 #include "TrafficLight.h"
 #include "ValveRow.h"
 
+struct savedDoor
+{
+	DoorState savedDoorState;
+	bool topValveOpen;
+	bool middleValveOpen;
+	bool bottomValveOpen;
+};
+
 class Door
 {
 private:
@@ -13,7 +21,13 @@ private:
 	bool interruptCaught;
 	CommunicationHandler* cHandler;
 	DoorType type;
-	DoorSide side;	
+	DoorSide side;
+	TrafficLight lightInside;
+	TrafficLight lightOutside;
+	
+	
+	void stopValves();
+	void resetSavedState();
 
 public:
 	Door(CommunicationHandler* existingHandler, DoorType Type, DoorSide Side);
@@ -26,8 +40,7 @@ public:
 	int closeDoor();
 	int stopDoor();
 
-	TrafficLight lightInside;
-	TrafficLight lightOutside;
+	savedDoor savedState;
 	ValveRow topValves;
 	ValveRow middleValves;
 	ValveRow bottomValves;

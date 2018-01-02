@@ -44,15 +44,15 @@ static const char DoorRightGetTopValve[] = "GetDoorRightValve3;\0";
 
 // Enable red traffic lights
 static const char TrafficLight1RedOn[] = "SetTrafficLight1Red:on;\0";
-static const char TrafficLight2RedOn[] = "SetTrafficLight1Red:on;\0";
-static const char TrafficLight3RedOn[] = "SetTrafficLight1Red:on;\0";
-static const char TrafficLight4RedOn[] = "SetTrafficLight1Red:on;\0";
+static const char TrafficLight2RedOn[] = "SetTrafficLight2Red:on;\0";
+static const char TrafficLight3RedOn[] = "SetTrafficLight3Red:on;\0";
+static const char TrafficLight4RedOn[] = "SetTrafficLight4Red:on;\0";
 
 // Disable red traffic lights
 static const char TrafficLight1RedOff[] = "SetTrafficLight1Red:off;\0";
-static const char TrafficLight2RedOff[] = "SetTrafficLight1Red:off;\0";
-static const char TrafficLight3RedOff[] = "SetTrafficLight1Red:off;\0";
-static const char TrafficLight4RedOff[] = "SetTrafficLight1Red:off;\0";
+static const char TrafficLight2RedOff[] = "SetTrafficLight2Red:off;\0";
+static const char TrafficLight3RedOff[] = "SetTrafficLight3Red:off;\0";
+static const char TrafficLight4RedOff[] = "SetTrafficLight4Red:off;\0";
 
 // Enable green traffic lights
 static const char TrafficLight1GreenOn[] = "SetTrafficLight1Green:on;\0";

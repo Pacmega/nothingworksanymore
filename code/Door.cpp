@@ -1,8 +1,10 @@
 #include <iostream>
 
 #include "Door.h"
-#include "lib/enums.h"
 #include "CommunicationHandler.h"
+
+#include "lib/enums.h"
+#include "lib/returnValues.h"
 
 Door::Door(CommunicationHandler* existingHandler, DoorType Type, DoorSide Side)
 	: cHandler(existingHandler)
@@ -16,6 +18,8 @@ Door::Door(CommunicationHandler* existingHandler, DoorType Type, DoorSide Side)
 	messageReceived = false;
 	side = Side;
 	type = Type;
+
+	resetSavedState(); // The initial state is the same as the state after resetting.
 }
 
 Door::~Door()
@@ -33,13 +37,26 @@ void Door::interruptReaction()
 	}
 	else
 	{
-		stopDoor();
 		interruptCaught = false; // Set up for another emergency stop later on
+		stopDoor();
 	}
 }
 
 int Door::allowExit()
 {
+	LightState outsideLightState = lightOutside.getLightState();
+	if (outsideLightState == greenLightOn)
+	{
+		if (lightOutside.redLight() != success)
+		{
+			return noAckReceived;
+		}
+	}
+	else if (outsideLightState == lightError)
+	{
+		return invalidLightState;
+	}
+
 	DoorState currentState = cHandler->getDoorState(side);
 	int rtnval;
 
@@ -54,29 +71,34 @@ int Door::allowExit()
 		// Because greenLight has its own return values, we need to be change
 		// openDoor's return to distinguish it from greenLight's.
 		{
-			case 0:
+			case success:
 				// Door has been opened
 				return lightInside.greenLight();
-			case -1:
-				return -3; // openDoor not acknowledged
-			case -2:
-				return -4; // Interrupt received
-			case -3:
-				return -5; // Water is not at a level where the door
-						   // can be opened.
 			default:
-				return -6; // This shouldn't be possible.
+				return rtnval; // This shouldn't be possible.
 		}
 	}
 	else
 	{
-		return -7; // Door is not in a state where a boat can be allowed to leave.
+		return incorrectDoorState; // Door is not in a state where a boat can be allowed to leave.
 	}
 }
 
 int Door::allowEntry()
 {
-	// std::cout << "[DBG] This door's location is " << side;
+	LightState insideLightState = lightInside.getLightState();
+	if (insideLightState == greenLightOn)
+	{
+		if (lightInside.redLight() != success)
+		{
+			return noAckReceived;
+		}
+	}
+	else if (insideLightState == lightError)
+	{
+		return invalidLightState;
+	}
+
 	DoorState currentState = cHandler->getDoorState(side);
 	int rtnval;
 
@@ -85,33 +107,31 @@ int Door::allowEntry()
 		// std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door was open)\n";
 		return lightOutside.greenLight();
 	}
-	else if (currentState == doorClosed || currentState == doorLocked)
+	else if (currentState == doorClosed || currentState == doorLocked || currentState == doorStopped)
 	{
-		std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
-		std::cout << "[DBG] Got door type " << type << std::endl;
+		// std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
+		// std::cout << "[DBG] Got door type " << type << std::endl;
 		rtnval = openDoor();
 		switch (rtnval)
 		// Because greenLight has its own return values, we need to be change
 		// openDoor's return to distinguish it from greenLight's.
 		{
-			case 0:
+			case success:
 				// Door has been opened
 				// std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door has been opened)\n";
 				return lightOutside.greenLight();
-			case -1:
-				return -3; // openDoor not acknowledged
-			case -2:
-				return -4; // Interrupt received
-			case -3:
-				return -5; // Water is not at a level where the door
-						   // can be opened.
 			default:
-				return -6; // This shouldn't be possible.
+				// Unable to open the door, return the error code
+				return rtnval;
 		}
+	}
+	else if (currentState == motorDamage)
+	{
+		return motorDamaged; // Unable to open door since it's broken
 	}
 	else
 	{
-		return -7; // Door is not in a state where a boat can be allowed to enter.
+		return incorrectDoorState; // Door is not in a state where a boat can be allowed to enter.
 	}
 }
 
@@ -121,26 +141,26 @@ int Door::openDoor()
 	// while the right door can only be opened when waterLevel = high.
 
 	WaterLevel currentWLevel = cHandler->getWaterLevel();
-	std::cout << "[DBG] Door side: " << side << std::endl;
-	std::cout << "[DBG] Water level: " << currentWLevel << std::endl;
+	// std::cout << "[DBG] Door side: " << side << std::endl;
+	// std::cout << "[DBG] Water level: " << currentWLevel << std::endl;
 	if (!((side == left && currentWLevel == low) || (side == right && currentWLevel == high)))
 	{
 		// The water is not at the right level to open the left door,
 		// but the water also isn't at the right level to open the right door
-		return -3; // Water level invalid for opening door
+		return incorrectWaterLevel; // Water level invalid for opening door
 	}
 
-	std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
-	std::cout << "[DBG] Got door type " << type << std::endl;
+	// std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
+	// std::cout << "[DBG] Got door type " << type << std::endl;
 
-	if (type == fastLock)
+	if (type == fastLock || cHandler->getDoorState(side) == doorLocked)
 	{
 		// Door is locked
 		messageReceived = cHandler->unlockDoor(side);
 
 		if (!messageReceived)
 		{
-			return -1; // Message was not acknowledged by the simulator
+			return noAckReceived; // Message was not acknowledged by the simulator
 		}
 		// Door is not locked
 	}
@@ -148,9 +168,10 @@ int Door::openDoor()
 	messageReceived = cHandler->openDoor(side);
 	if (!messageReceived)
 	{
-		return -1; // Message was not acknowledged by the simulator
+		return noAckReceived; // Message was not acknowledged by the simulator
 	}
 
+	savedState.savedDoorState = doorOpening;
 	DoorState currentState = cHandler->getDoorState(side);
 	do
 	{
@@ -160,30 +181,72 @@ int Door::openDoor()
 			
 			if (!messageReceived)
 			{
-				return -1; // Message was not acknowledged by the simulator
+				return noAckReceived; // Message was not acknowledged by the simulator
 			}
+		}
+		else if (currentState == motorDamage)
+		{
+			return motorDamaged;
 		}
 		currentState = cHandler->getDoorState(side);
 	} while (!interruptCaught && currentState != doorOpen);
 
 	if (currentState != doorOpen)
 	{
-		return -2; // An interrupt was received
+		return interruptReceived; // An interrupt was received, door was not fully opened
 	}
 	else
 	{
-		return 0; // Door opened
+		return success; // Door opened
 	}
 }
 
 int Door::closeDoor()
 {
+	// Check if any lights are green, they need to be turned red before closing the door.
+	LightState currentLightState = lightInside.getLightState();
+	if (currentLightState == greenLightOn)
+	{
+		lightInside.redLight();
+	}
+	else if (currentLightState == lightError)
+	{
+		return invalidLightState;
+	}
+	// If neither, the light was already red.
+
+	currentLightState = lightOutside.getLightState();
+	if (currentLightState == greenLightOn)
+	{
+		lightOutside.redLight();
+	}
+	else if (currentLightState == lightError)
+	{
+		return invalidLightState;
+	}
+	// If neither, the light was already red.
+
+	// Check if any valves are open, can't close the door with open valves.
+	if (topValves.getValveRowOpened())
+	{
+		topValves.closeValveRow();
+	}
+	if (topValves.getValveRowOpened())
+	{
+		middleValves.closeValveRow();
+	}
+	if (topValves.getValveRowOpened())
+	{
+		bottomValves.closeValveRow();
+	}
+
 	messageReceived = cHandler->closeDoor(side);
 	if (!messageReceived)
 	{
-		return -1; // Message was not acknowledged by the simulator
+		return noAckReceived; // Message was not acknowledged by the simulator
 	}
 
+	savedState.savedDoorState = doorClosing;
 	DoorState currentState = cHandler->getDoorState(side);
 	do
 	{
@@ -193,7 +256,7 @@ int Door::closeDoor()
 			
 			if (!messageReceived)
 			{
-				return false; // Message was not acknowledged by the simulator
+				return noAckReceived; // Message was not acknowledged by the simulator
 			}
 		}
 		currentState = cHandler->getDoorState(side);
@@ -201,11 +264,11 @@ int Door::closeDoor()
 
 	if (currentState != doorClosed)
 	{
-		return -2; // An interrupt was received
+		return interruptReceived; // An interrupt was received
 	}
 	else
 	{
-		return 0; // Door opened
+		return success; // Door opened
 	}
 
 	if (type == fastLock)
@@ -215,7 +278,7 @@ int Door::closeDoor()
 
 		if (!messageReceived)
 		{
-			return -1; // Message was not acknowledged by the simulator
+			return noAckReceived; // Message was not acknowledged by the simulator
 		}
 		// Door is locked
 	}
@@ -223,7 +286,106 @@ int Door::closeDoor()
 
 int Door::stopDoor()
 {
-	// The CommunicationHandler part does way too much for stopping.
+	if (interruptCaught)
+	{
+		DoorState currentState = cHandler->getDoorState(side);
+		if (currentState == doorLocked || currentState == doorClosed)
+		{
+			// The door is closed, but valves may be open.
+			savedState.savedDoorState = currentState;
+			stopValves();
+		}
+		else if (currentState == doorOpening || currentState == doorClosing || currentState == doorStopped)
+		{
+			// The door is in the process of either opening or closing.
+			// Don't save the current state, if it's stopped there is no way to know whether it was opening or closing.
+			// Whether it was opening or closing was set when openDoor() or closeDoor() was called.
+			cHandler->stopDoor(side);
+		}
+		else
+		{
+			// The door wasn't moving, but valves may have been open.
+			// Just like stopDoor, stopValves doubles as both stop and restore function.
+			stopValves();
+		}
+	}
+	else
+	{
+		// Door was already stopped, restore status.
+		if (savedState.savedDoorState == doorLocked || savedState.savedDoorState == doorClosed)
+		{
+			// The door was closed, but valves may have been open.
+			// Just like stopDoor, stopValves doubles as both stop and restore function.
+			stopValves();
+		}
+		else if (savedState.savedDoorState == doorOpening)
+		{
+			// The door was in the process of opening.
+			openDoor();
+		}
+		else if (savedState.savedDoorState == doorClosing)
+		{
+			// The door was in the process of closing.
+			closeDoor();
+		}
+		else
+		{
+			// These are door states where we didn't need to do anything to stop in the first place.
+		}
+	}
 	cHandler->stopDoor(side);
-	return -1;
+	return noAckReceived;
+}
+
+void Door::stopValves()
+{
+	if (interruptCaught)
+	{
+		// Save valve states and close opened valves.
+		savedState.topValveOpen = topValves.getValveRowOpened();
+		savedState.middleValveOpen = middleValves.getValveRowOpened();
+		savedState.bottomValveOpen = bottomValves.getValveRowOpened();
+
+		std::cout << "topValveOpen: " << savedState.topValveOpen << std::endl;
+		std::cout << "middleValveOpen: " << savedState.middleValveOpen << std::endl;
+		std::cout << "bottomValveOpen: " << savedState.bottomValveOpen << std::endl;
+
+		if (savedState.topValveOpen)
+		{
+			topValves.closeValveRow();
+		}
+		if (savedState.middleValveOpen)
+		{
+			middleValves.closeValveRow();
+		}
+		if (savedState.bottomValveOpen)
+		{
+			bottomValves.closeValveRow();
+		}
+	}
+	else
+	{
+		// Reopen valves that were open before the stop.
+
+		if (savedState.topValveOpen)
+		{
+			cHandler->valveOpen(side, 3);
+		}
+		if (savedState.middleValveOpen)
+		{
+			cHandler->valveClose(side, 2);
+		}
+		if (savedState.bottomValveOpen)
+		{
+			cHandler->valveClose(side, 1);
+		}
+	}
+}
+
+void Door::resetSavedState()
+{
+	savedState.savedDoorState = doorStateError;
+	savedState.topValveOpen = false;
+	savedState.middleValveOpen = false;
+	savedState.bottomValveOpen = false;
 }

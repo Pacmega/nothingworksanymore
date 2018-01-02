@@ -4,20 +4,12 @@
 #include "CommunicationHandler.h"
 #include "lib/commands.h"
 #include "lib/enums.h"
+#include "lib/returnValues.h"
 
 CommunicationHandler::CommunicationHandler(int socket)
 	: simulation(SimulationCommunicator(socket))
 {
-	// std::cout << "[DBG] cHandler creating SimulationCommunicator with socket " << socket << std::endl;
-	savedLeftDoor.savedDoorState = doorStateError;
-	savedLeftDoor.topValveOpen = false;
-	savedLeftDoor.middleValveOpen = false;
-	savedLeftDoor.bottomValveOpen = false;
-
-	savedRightDoor.savedDoorState = doorStateError;
-	savedRightDoor.topValveOpen = false;
-	savedRightDoor.middleValveOpen = false;
-	savedRightDoor.bottomValveOpen = false;
+	
 }
 
 CommunicationHandler::~CommunicationHandler()
@@ -163,525 +155,22 @@ bool CommunicationHandler::closeDoor(DoorSide side)
 
 bool CommunicationHandler::stopDoor(DoorSide side)
 {
-	// TODO: if there is time, move the state saving and recovering to door itself
-
-	// Only stop doors that are currently actually doing something,
-	// and close any opened valves.
-	// If this function is called when a door is already stopped,
-	// the door is instead restored to its original status.
-
-	// And yes, this function probably does way too much.
-	// Consequence of having 0 free time, no vacation, and no weekend to speak of.
-	// Any free time I was basically forced to have only increased stress levels.
-
-	const char* getStatusMsg;
-
 	if (side == left)
 	{
-		getStatusMsg = GetDoorLeft;
+		receivedMessage = simulation.sendMessage(DoorLeftStop);
 	}
 	else // side == right
 	{
-		getStatusMsg = GetDoorRight;
+		receivedMessage = simulation.sendMessage(DoorRightStop);
 	}
 
-	receivedMessage = simulation.sendMessage(getStatusMsg);
-
-	// Switch cases still aren't possible for strings sadly.
-	// There are only two cases where the door actually needs to be stopped:
-	// when it's closing and when it's opening.
-	if (strcmp(receivedMessage, "doorClosing") == 0)
+	if (strcmp(receivedMessage, "ack") == 0)
 	{
-		if (side == left)
-		{
-			savedLeftDoor.savedDoorState = doorClosing;
-
-			receivedMessage = simulation.sendMessage(DoorLeftStop);
-		}
-		else // side == right
-		{
-			savedRightDoor.savedDoorState = doorClosing;
-
-			receivedMessage = simulation.sendMessage(DoorRightStop);
-		}
-
-		if (strcmp(receivedMessage, "ack") == 0)
-		{
-			return 0; // Successfully stopped and saved state
-		}
-		else
-		{
-			return -1; // Message was not acknowledged by simulator
-		}
-	}
-	else if (strcmp(receivedMessage, "doorOpening") == 0)
-	{
-		if (side == left)
-		{
-			savedLeftDoor.savedDoorState = doorOpening;
-
-			receivedMessage = simulation.sendMessage(DoorLeftStop);
-		}
-		else // side == right
-		{
-			savedRightDoor.savedDoorState = doorOpening;
-
-			receivedMessage = simulation.sendMessage(DoorRightStop);
-		}
-
-		if (strcmp(receivedMessage, "ack") == 0)
-		{
-			return 0; // Successfully stopped and saved state
-		}
-		else
-		{
-			return -1; // Message was not acknowledged by simulator
-		}
-	}
-	else if (strcmp(receivedMessage, "doorClosed") == 0 || strcmp(receivedMessage, "doorLocked") == 0)
-	{
-		if (side == left)
-		{
-			if (strcmp(receivedMessage, "doorClosed") == 0)
-			{
-				savedLeftDoor.savedDoorState = doorClosed;
-			}
-			else // state = doorLocked
-			{
-				savedLeftDoor.savedDoorState = doorLocked;
-			}
-
-			savedLeftDoor.topValveOpen = getValveOpened(left, 3);
-			savedLeftDoor.middleValveOpen = getValveOpened(left, 2);
-			savedLeftDoor.bottomValveOpen = getValveOpened(left, 1);
-
-			bool messageReceived;
-			if (savedLeftDoor.topValveOpen)
-			{
-				messageReceived = valveClose(left, 3);
-				if (messageReceived)
-				{
-					if (savedLeftDoor.middleValveOpen)
-					{
-						messageReceived = valveClose(left, 2);
-						if (messageReceived)
-						{
-							if (savedLeftDoor.bottomValveOpen)
-							{
-								messageReceived = valveClose(left, 1);
-								if (messageReceived)
-								{
-									return 0; // Success
-								}
-							}
-							else
-							{
-								return 0; // Success
-							}
-						}
-					}
-					else if (savedLeftDoor.bottomValveOpen)
-					{
-						messageReceived = valveClose(left, 1);
-						if (messageReceived)
-						{
-							return 0; // Success
-						}
-					}
-					else
-					{
-						return 0; // Success
-					}
-				}
-			}
-			else if (savedLeftDoor.middleValveOpen)
-			{
-				messageReceived = valveClose(left, 2);
-				if (messageReceived)
-				{
-					if (savedLeftDoor.bottomValveOpen)
-					{
-						messageReceived = valveClose(left, 1);
-						if (messageReceived)
-						{
-							return 0; // Success
-						}
-					}
-					else
-					{
-						return 0; // Success
-					}
-				}
-			}
-			else if (savedLeftDoor.bottomValveOpen)
-			{
-				messageReceived = valveClose(left, 1);
-				if (messageReceived)
-				{
-					return 0; // Success
-				}
-			}
-			else
-			{
-				return 0; // No valves to close.
-			}
-		}
-		else // side == right
-		{
-			if (strcmp(receivedMessage, "doorClosed") == 0)
-			{
-				savedRightDoor.savedDoorState = doorClosed;
-			}
-			else // state = doorLocked
-			{
-				savedRightDoor.savedDoorState = doorLocked;
-			}
-
-			savedRightDoor.topValveOpen = getValveOpened(right, 3);
-			savedRightDoor.middleValveOpen = getValveOpened(right, 2);
-			savedRightDoor.bottomValveOpen = getValveOpened(right, 1);
-
-			bool messageReceived;
-			if (savedRightDoor.topValveOpen)
-			{
-				messageReceived = valveClose(right, 3);
-				if (messageReceived)
-				{
-					if (savedRightDoor.middleValveOpen)
-					{
-						messageReceived = valveClose(right, 2);
-						if (messageReceived)
-						{
-							if (savedRightDoor.bottomValveOpen)
-							{
-								messageReceived = valveClose(right, 1);
-								if (messageReceived)
-								{
-									return 0; // Success
-								}
-							}
-							else
-							{
-								return 0; // Success
-							}
-						}
-					}
-					else if (savedRightDoor.bottomValveOpen)
-					{
-						messageReceived = valveClose(right, 1);
-						if (messageReceived)
-						{
-							return 0; // Success
-						}
-					}
-					else
-					{
-						return 0; // Success
-					}
-				}
-			}
-			else if (savedRightDoor.middleValveOpen)
-			{
-				messageReceived = valveClose(right, 2);
-				if (messageReceived)
-				{
-					if (savedRightDoor.bottomValveOpen)
-					{
-						messageReceived = valveClose(right, 1);
-						if (messageReceived)
-						{
-							return 0; // Success
-						}
-					}
-					else
-					{
-						return 0; // Success
-					}
-				}
-			}
-			else if (savedRightDoor.bottomValveOpen)
-			{
-				messageReceived = valveClose(right, 1);
-				if (messageReceived)
-				{
-					return 0; // Success
-				}
-			}
-			else
-			{
-				return 0; // No valves to close.
-			}
-		}
-
-		// If this point is reached, somewhere along the way the simulator told the user to fuck off. (nack)
-		return -1;
-	}
-	else if (strcmp(receivedMessage, "doorStopped") == 0)
-	{
-		// Door was stopped, restore it to the way it was.
-		bool messageReceived;
-
-		if (side == left)
-		{
-			switch (savedLeftDoor.savedDoorState)
-			{
-				case doorOpening:
-					messageReceived = openDoor(left);
-					if (messageReceived)
-					{
-						return 0; // Success
-					}
-					else
-					{
-						return -1; // Message was not acknowledged by simulator
-					}
-				case doorClosing:
-					messageReceived = closeDoor(left);
-					if (messageReceived)
-					{
-						return 0; // Success
-					}
-					else
-					{
-						return -1; // Message was not acknowledged by simulator
-					}
-				case doorLocked:
-					if (savedLeftDoor.topValveOpen)
-					{
-						messageReceived = valveOpen(left, 3);
-						if (messageReceived)
-						{
-							if (savedLeftDoor.middleValveOpen)
-							{
-								messageReceived = valveOpen(left, 2);
-								if (messageReceived)
-								{
-									if (savedLeftDoor.bottomValveOpen)
-									{
-										messageReceived = valveOpen(left, 1);
-										if (messageReceived)
-										{
-											return 0; // Success
-										}
-										else
-										{
-											return -1; // Message was not acknowledged by simulator
-										}
-									}
-									else
-									{
-										return 0; // Success
-									}
-								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
-							}
-							else if (savedLeftDoor.bottomValveOpen)
-							{
-								messageReceived = valveOpen(left, 1);
-								if (messageReceived)
-								{
-									return 0; // Success
-								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
-							}
-							else
-							{
-								return 0; // Success
-							}
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
-					}
-					else if (savedLeftDoor.middleValveOpen)
-					{
-						messageReceived = valveOpen(left, 2);
-						if (messageReceived)
-						{
-							if (savedLeftDoor.bottomValveOpen)
-							{
-								messageReceived = valveOpen(left, 1);
-								if (messageReceived)
-								{
-									return 0; // Success
-								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
-							}
-							else
-							{
-								return 0; // Success
-							}
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
-					}
-					else if (savedLeftDoor.bottomValveOpen)
-					{
-						messageReceived = valveOpen(left, 1);
-						if (messageReceived)
-						{
-							return 0; // Success
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
-					}
-					else
-					{
-						return 0; // There were no valves opened, so none were reopened.
-					}
-				default:
-					// Nothing was changed by stopping the door, so there is nothing to change when restarting it.
-					return 0;
-			}
-		}
-		else // side == right
-		{
-			switch (savedRightDoor.savedDoorState)
-			{
-				case doorOpening:
-					messageReceived = openDoor(right);
-					if (messageReceived)
-					{
-						return 0; // Success
-					}
-					else
-					{
-						return -1; // Message was not acknowledged by simulator
-					}
-				case doorClosing:
-					messageReceived = closeDoor(right);
-					if (messageReceived)
-					{
-						return 0; // Success
-					}
-					else
-					{
-						return -1; // Message was not acknowledged by simulator
-					}
-				case doorLocked:
-					if (savedRightDoor.topValveOpen)
-					{
-						messageReceived = valveOpen(right, 3);
-						if (messageReceived)
-						{
-							if (savedRightDoor.middleValveOpen)
-							{
-								messageReceived = valveOpen(right, 2);
-								if (messageReceived)
-								{
-									if (savedRightDoor.bottomValveOpen)
-									{
-										messageReceived = valveOpen(right, 1);
-										if (messageReceived)
-										{
-											return 0; // Success
-										}
-										else
-										{
-											return -1; // Message was not acknowledged by simulator
-										}
-									}
-									else
-									{
-										return 0; // Success
-									}
-								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
-							}
-							else if (savedRightDoor.bottomValveOpen)
-							{
-								messageReceived = valveOpen(right, 1);
-								if (messageReceived)
-								{
-									return 0; // Success
-								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
-							}
-							else
-							{
-								return 0; // Success
-							}
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
-					}
-					else if (savedRightDoor.middleValveOpen)
-					{
-						messageReceived = valveOpen(right, 2);
-						if (messageReceived)
-						{
-							if (savedRightDoor.bottomValveOpen)
-							{
-								messageReceived = valveOpen(right, 1);
-								if (messageReceived)
-								{
-									return 0; // Success
-								}
-								else
-								{
-									return -1; // Message was not acknowledged by simulator
-								}
-							}
-							else
-							{
-								return 0; // Success
-							}
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
-					}
-					else if (savedRightDoor.bottomValveOpen)
-					{
-						messageReceived = valveOpen(right, 1);
-						if (messageReceived)
-						{
-							return 0; // Success
-						}
-						else
-						{
-							return -1; // Message was not acknowledged by simulator
-						}
-					}
-					else
-					{
-						return 0; // There were no valves opened, so none were reopened.
-					}
-				default:
-					// Nothing was changed by stopping the door, so there is nothing to change when restarting it.
-					return 0;
-			}
-		}
-
-		return -1; // Not finished
+		return success; // Successfully stopped
 	}
 	else
 	{
-		// There is nothing to stop.
-		return 0;
+		return noAckReceived; // Message was not acknowledged by simulator
 	}
 }
 
@@ -860,21 +349,21 @@ int CommunicationHandler::redLight(int lightLocation)
 			receivedMessage = simulation.sendMessage(message2ToSend);
 			if (strcmp(receivedMessage, "ack") == 0)
 			{
-				return 0; // Success
+				return success; // Success
 			}
 			else
 			{
-				return -1; // Only one of the lights was changed
+				return noAckReceived; // Only one of the lights was changed
 			}
 		}
 		else
 		{
-			return -2; // None of the lights were changed.
+			return noAckReceived; // None of the lights were changed.
 		}
 	}
 	else
 	{
-		return -3; // Invalid lightLocation was passed
+		return invalidLightLocation; // Invalid lightLocation was passed
 	}
 }
 
@@ -912,16 +401,16 @@ int CommunicationHandler::greenLight(int lightLocation)
 			receivedMessage = simulation.sendMessage(message2ToSend);
 			if (strcmp(receivedMessage, "ack") == 0)
 			{
-				return 0; // Success
+				return success; // Success
 			}
 		}
 	}
 	else
 	{
-		return -2; // Invalid lightLocation was passed
+		return invalidLightLocation; // Invalid lightLocation was passed
 	}
 
-	return -1; // One of the messages was not received by the simulator
+	return noAckReceived; // One of the messages was not received by the simulator
 }
 
 LightState CommunicationHandler::getLightState(int lightLocation)
@@ -956,8 +445,8 @@ LightState CommunicationHandler::getLightState(int lightLocation)
 		std::string redLightReceived = simulation.sendMessage(redLightMessage);
 		std::string greenLightReceived = simulation.sendMessage(greenLightMessage);
 
-		std::cout << "Red light state: " << redLightReceived << std::endl;
-		std::cout << "Green light state: " << greenLightReceived << std::endl;
+		// std::cout << "Red light state: " << redLightReceived << std::endl;
+		// std::cout << "Green light state: " << greenLightReceived << std::endl;
 
 		if (redLightReceived == "on" && greenLightReceived == "off")
 		{

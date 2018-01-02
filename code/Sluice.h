@@ -18,10 +18,13 @@ public:
     CommunicationHandler cHandler;
 
 private:
-	
 	Door leftDoor;
 	Door rightDoor;
-	int returnValue;
+
+	bool emergency;
+	SluiceState stateBeforeEmergency;
+
+	bool closeValves(DoorSide side);
 };
 
 #endif

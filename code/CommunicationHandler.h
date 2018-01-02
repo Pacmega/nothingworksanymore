@@ -4,13 +4,7 @@
 #include "SimulationCommunicator.h"
 #include "lib/enums.h"
 
-struct savedDoor
-{
-	DoorState savedDoorState;
-	bool topValveOpen;
-	bool middleValveOpen;
-	bool bottomValveOpen;
-};
+
 
 class CommunicationHandler
 {
@@ -35,8 +29,6 @@ public:
 private:
 	SimulationCommunicator simulation;
 	char* receivedMessage;
-	savedDoor savedLeftDoor;
-	savedDoor savedRightDoor;
 };
 
 #endif

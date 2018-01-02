@@ -23,6 +23,23 @@ enum DoorState
 	doorStateError
 };
 
+enum LightState
+{
+	redLightOn,
+	greenLightOn,
+	lightError
+};
+
+enum SluiceState
+{
+	allowingEntryLeft,
+	allowingEntryRight,
+	allowingExitLeft,
+	allowingExitRight,
+	sluicingUp,
+	sluicingDown
+};
+
 enum DoorType
 {
 	noLock,
@@ -33,13 +50,6 @@ enum DoorSide
 {
 	left,
 	right
-};
-
-enum LightState
-{
-	redLightOn,
-	greenLightOn,
-	lightError
 };
 
 #endif
