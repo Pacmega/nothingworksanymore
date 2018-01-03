@@ -12,8 +12,8 @@ public:
 	~Sluice();
 	
 	int start();
-	int allowEntry(DoorSide side);
-    int allowExit(DoorSide side);
+	int allowEntry();
+    int allowExit();
     void passInterrupt();
     CommunicationHandler cHandler;
 

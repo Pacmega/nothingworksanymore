@@ -125,6 +125,7 @@ int main(int argc, char const *argv[])
                 std::cout << "\n==Sluice 1 (standard)==\n";
                 while (choice != '9')
                 {
+                    // TODO: merge exit left/right & entry left/right into singular functions
                     std::cout << "[1]   Allow entry from the left\n"
                               << "[2]   Allow exiting on the left\n"
                               << "[3]   Move boat up/down\n"
@@ -139,12 +140,12 @@ int main(int argc, char const *argv[])
                     {
                         case '1':
                             std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
-                            rtnval = normalSluice1.allowEntry(left);
+                            rtnval = normalSluice1.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
                             std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = normalSluice1.allowExit(left);
+                            rtnval = normalSluice1.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         case '3':
@@ -154,12 +155,12 @@ int main(int argc, char const *argv[])
                             break;
                         case '4':
                             std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = normalSluice1.allowEntry(right);
+                            rtnval = normalSluice1.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '5':
                             std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
-                            rtnval = normalSluice1.allowExit(right);
+                            rtnval = normalSluice1.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         default:
@@ -187,12 +188,12 @@ int main(int argc, char const *argv[])
                     {
                         case '1':
                             std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
-                            rtnval = normalSluice2.allowEntry(left);
+                            rtnval = normalSluice2.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
                             std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = normalSluice2.allowExit(left);
+                            rtnval = normalSluice2.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         case '3':
@@ -202,12 +203,12 @@ int main(int argc, char const *argv[])
                             break;
                         case '4':
                             std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = normalSluice2.allowEntry(right);
+                            rtnval = normalSluice2.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '5':
                             std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
-                            rtnval = normalSluice2.allowExit(right);
+                            rtnval = normalSluice2.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         default:
@@ -235,12 +236,12 @@ int main(int argc, char const *argv[])
                     {
                         case '1':
                             std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
-                            rtnval = fastLockSluice.allowEntry(left);
+                            rtnval = fastLockSluice.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
                             std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = fastLockSluice.allowExit(left);
+                            rtnval = fastLockSluice.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         case '3':
@@ -250,12 +251,12 @@ int main(int argc, char const *argv[])
                             break;
                         case '4':
                             std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = fastLockSluice.allowEntry(right);
+                            rtnval = fastLockSluice.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '5':
                             std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
-                            rtnval = fastLockSluice.allowExit(right);
+                            rtnval = fastLockSluice.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         default:
@@ -283,12 +284,12 @@ int main(int argc, char const *argv[])
                     {
                         case '1':
                             std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
-                            rtnval = pulseMotorSluice.allowEntry(left);
+                            rtnval = pulseMotorSluice.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
                             std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = pulseMotorSluice.allowExit(left);
+                            rtnval = pulseMotorSluice.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         case '3':
@@ -298,12 +299,12 @@ int main(int argc, char const *argv[])
                             break;
                         case '4':
                             std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = pulseMotorSluice.allowEntry(right);
+                            rtnval = pulseMotorSluice.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '5':
                             std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
-                            rtnval = pulseMotorSluice.allowExit(right);
+                            rtnval = pulseMotorSluice.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
                         default:

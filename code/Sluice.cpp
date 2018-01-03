@@ -42,16 +42,16 @@ void Sluice::passInterrupt()
 				start();
 				break;
 			case allowingEntryLeft:
-				allowEntry(left);
+				allowEntry();
 				break;
 			case allowingEntryRight:
-				allowEntry(right);
+				allowEntry();
 				break;
 			case allowingExitLeft:
-				allowExit(left);
+				allowExit();
 				break;
 			case allowingExitRight:
-				allowExit(right);
+				allowExit();
 				break;
 		}
 	}
@@ -269,30 +269,40 @@ int Sluice::start()
 	return workInProgress;
 }
 
-int Sluice::allowEntry(DoorSide side)
+int Sluice::allowEntry()
 {
-	if (side == left)
+	WaterLevel currentWLevel = cHandler.getWaterLevel();
+	if (currentWLevel == low)
 	{
 		stateBeforeEmergency = allowingEntryLeft;
 		return leftDoor.allowEntry();
 	}
-	else // side == right
+	else if (currentWLevel == high)
 	{
 		stateBeforeEmergency = allowingEntryRight;
 		return rightDoor.allowEntry();
 	}
+	else
+	{
+		return incorrectWaterLevel;
+	}
 }
 
-int Sluice::allowExit(DoorSide side)
+int Sluice::allowExit()
 {
-	if (side == left)
+	WaterLevel currentWLevel = cHandler.getWaterLevel();
+	if (currentWLevel == low)
 	{
-		stateBeforeEmergency = allowingExitLeft;
+		stateBeforeEmergency = allowingEntryLeft;
 		return leftDoor.allowExit();
 	}
-	else // side == right
+	else if (currentWLevel == high)
 	{
-		stateBeforeEmergency = allowingExitRight;
+		stateBeforeEmergency = allowingEntryRight;
 		return rightDoor.allowExit();
+	}
+	else
+	{
+		return incorrectWaterLevel;
 	}
 }
