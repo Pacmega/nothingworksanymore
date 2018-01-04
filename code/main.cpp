@@ -1,3 +1,7 @@
+// TODO: add use case (lucidchart) for allowEntry and allowExit specifically instead of one for both
+// TODO: check for memory leaks
+// TODO: ensure classes can not be copied
+
 #include <iostream>
 #include <signal.h>
 
@@ -126,11 +130,11 @@ int main(int argc, char const *argv[])
                 while (choice != '9')
                 {
                     // TODO: merge exit left/right & entry left/right into singular functions
-                    std::cout << "[1]   Allow entry from the left\n"
-                              << "[2]   Allow exiting on the left\n"
-                              << "[3]   Move boat up/down\n"
-                              << "[4]   Allow entry from the right\n"
-                              << "[5]   Allow exiting on the right\n"
+                    // Update: this should work now? (somehow can't test atm)
+
+                    std::cout << "[1]   Allow entry\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow exiting\n"
                               << "[9]   Return to main menu\n"
                               << "Enter your choice: ";
                     std::cin >> line;
@@ -139,27 +143,17 @@ int main(int argc, char const *argv[])
                     switch (choice)
                     {
                         case '1':
-                            std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
+                            std::cout << "Allowing entry into sluice.\n" << std::endl;
                             rtnval = normalSluice1.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
-                            std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = normalSluice1.allowExit();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '3':
                             std::cout << "Moving boat up or down, depending on current position.\n" << std::endl;
                             rtnval = normalSluice1.start();
                             startInterpreter(rtnval);
                             break;
-                        case '4':
-                            std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = normalSluice1.allowEntry();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '5':
-                            std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
+                        case '3':
+                            std::cout << "Allowing exiting the sluice.\n" << std::endl;
                             rtnval = normalSluice1.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
@@ -174,11 +168,9 @@ int main(int argc, char const *argv[])
                 std::cout << "\n==Sluice 2 (standard)==\n";
                 while (choice != '9')
                 {
-                    std::cout << "[1]   Allow entry from the left\n"
-                              << "[2]   Allow exiting on the left\n"
-                              << "[3]   Move boat up/down\n"
-                              << "[4]   Allow entry from the right\n"
-                              << "[5]   Allow exiting on the right\n"
+                    std::cout << "[1]   Allow entry\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow exiting\n"
                               << "[9]   Return to main menu\n"
                               << "Enter your choice: ";
                     std::cin >> line;
@@ -187,27 +179,17 @@ int main(int argc, char const *argv[])
                     switch (choice)
                     {
                         case '1':
-                            std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
+                            std::cout << "Allowing entry into sluice.\n" << std::endl;
                             rtnval = normalSluice2.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
-                            std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = normalSluice2.allowExit();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '3':
                             std::cout << "Moving boat up or down, depending on current position.\n" << std::endl;
                             rtnval = normalSluice2.start();
                             startInterpreter(rtnval);
                             break;
-                        case '4':
-                            std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = normalSluice2.allowEntry();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '5':
-                            std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
+                        case '3':
+                            std::cout << "Allowing exiting the sluice.\n" << std::endl;
                             rtnval = normalSluice2.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
@@ -222,11 +204,9 @@ int main(int argc, char const *argv[])
                 std::cout << "\n==Sluice 3 (locking doors)==\n";
                 while (choice != '9')
                 {
-                    std::cout << "[1]   Allow entry from the left\n"
-                              << "[2]   Allow exiting on the left\n"
-                              << "[3]   Move boat up/down\n"
-                              << "[4]   Allow entry from the right\n"
-                              << "[5]   Allow exiting on the right\n"
+                    std::cout << "[1]   Allow entry\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow exiting\n"
                               << "[9]   Return to main menu\n"
                               << "Enter your choice: ";
                     std::cin >> line;
@@ -235,27 +215,17 @@ int main(int argc, char const *argv[])
                     switch (choice)
                     {
                         case '1':
-                            std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
+                            std::cout << "Allowing entry into sluice.\n" << std::endl;
                             rtnval = fastLockSluice.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
-                            std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = fastLockSluice.allowExit();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '3':
                             std::cout << "Moving boat up or down, depending on current position.\n" << std::endl;
                             rtnval = fastLockSluice.start();
                             startInterpreter(rtnval);
                             break;
-                        case '4':
-                            std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = fastLockSluice.allowEntry();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '5':
-                            std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
+                        case '3':
+                            std::cout << "Allowing exiting the sluice.\n" << std::endl;
                             rtnval = fastLockSluice.allowExit();
                             entryExitInterpreter(rtnval);
                             break;
@@ -270,11 +240,9 @@ int main(int argc, char const *argv[])
                 std::cout << "\n==Sluice 4 (different motor)==\n";
                 while (choice != '9')
                 {
-                    std::cout << "[1]   Allow entry from the left\n"
-                              << "[2]   Allow exiting on the left\n"
-                              << "[3]   Move boat up/down\n"
-                              << "[4]   Allow entry from the right\n"
-                              << "[5]   Allow exiting on the right\n"
+                    std::cout << "[1]   Allow entry\n"
+                              << "[2]   Move boat up/down\n"
+                              << "[3]   Allow exiting\n"
                               << "[9]   Return to main menu\n"
                               << "Enter your choice: ";
                     std::cin >> line;
@@ -283,27 +251,17 @@ int main(int argc, char const *argv[])
                     switch (choice)
                     {
                         case '1':
-                            std::cout << "Allowing entry into sluice from the left side.\n" << std::endl;
+                            std::cout << "Allowing entry into sluice.\n" << std::endl;
                             rtnval = pulseMotorSluice.allowEntry();
                             entryExitInterpreter(rtnval);
                             break;
                         case '2':
-                            std::cout << "Allowing exiting the sluice on the left side.\n" << std::endl;
-                            rtnval = pulseMotorSluice.allowExit();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '3':
                             std::cout << "Moving boat up or down, depending on current position.\n" << std::endl;
                             rtnval = pulseMotorSluice.start();
                             startInterpreter(rtnval);
                             break;
-                        case '4':
-                            std::cout << "Allowing entry into sluice from the right side.\n" << std::endl;
-                            rtnval = pulseMotorSluice.allowEntry();
-                            entryExitInterpreter(rtnval);
-                            break;
-                        case '5':
-                            std::cout << "Allowing exiting the sluice on the right side.\n" << std::endl;
+                        case '3':
+                            std::cout << "Allowing exiting the sluice.\n" << std::endl;
                             rtnval = pulseMotorSluice.allowExit();
                             entryExitInterpreter(rtnval);
                             break;

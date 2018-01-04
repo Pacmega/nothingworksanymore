@@ -5,6 +5,7 @@
 #include "lib/enums.h"
 #include "lib/returnValues.h"
 
+// TODO: is it possible to pass references instead of pointers?
 Sluice::Sluice(int port)
 	: cHandler(port)
 	, leftDoor(&cHandler, (port==5557) ? fastLock : noLock, left)
