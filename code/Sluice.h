@@ -24,6 +24,8 @@ private:
 	bool emergency;
 	SluiceState stateBeforeEmergency;
 
+	int sluiceUp(WaterLevel currentWLevel); // TODO: add this function to the class diagram
+	int sluiceDown(WaterLevel currentWLevel); // TODO: add this function to the class diagram
 	bool closeValves(DoorSide side);
 };
 

@@ -20,6 +20,8 @@ Sluice::~Sluice()
 
 void Sluice::passInterrupt()
 {
+	// TODO: This interrupt takes ages to complete. Fix that?
+
 	leftDoor.interruptReaction();
 	rightDoor.interruptReaction();
 
@@ -112,11 +114,110 @@ bool Sluice::closeValves(DoorSide side)
 	return true;
 }
 
+int Sluice::sluiceUp(WaterLevel currentWLevel)
+{
+	do
+	{
+		currentWLevel = cHandler.getWaterLevel();
+		switch(currentWLevel)
+		{
+			case low:
+				if(!rightDoor.bottomValves.getValveRowOpened())
+				{
+					if (!rightDoor.bottomValves.openValveRow())
+					{
+						return noAckReceived;
+					}
+				}
+				break;
+			case belowValve2:
+				// Can't use one case for two possiblities, but these actually have the same consequences.
+				if(!rightDoor.bottomValves.getValveRowOpened())
+				{
+					if (!rightDoor.bottomValves.openValveRow())
+					{
+						return noAckReceived;
+					}
+				}
+				break;
+			case aboveValve2:
+				if(!rightDoor.middleValves.getValveRowOpened())
+				{
+					if (!rightDoor.middleValves.openValveRow())
+					{
+						return noAckReceived;
+					}
+				}
+				break;
+			case aboveValve3:
+				if(!rightDoor.topValves.getValveRowOpened())
+				{
+					if (!rightDoor.topValves.openValveRow())
+					{
+						return noAckReceived;
+					}
+				}
+				break;
+			case high:
+				// Nothing to do here, about to break out of the while loop.
+				break;
+			case waterError:
+				// Can't go on with incorrect data.
+				return incorrectWaterLevel;
+		}
+	} while (currentWLevel != high && !emergency);
+
+	if (currentWLevel != high)
+	{
+		return interruptReceived;
+	}
+	else
+	{
+		// After finishing the process, close all valves.
+		if (!closeValves(right))
+		{
+			return noAckReceived;
+		}
+
+		return success;
+	}
+}
+
+int Sluice::sluiceDown(WaterLevel currentWLevel)
+{
+	leftDoor.bottomValves.openValveRow();
+
+	do
+	{
+		currentWLevel = cHandler.getWaterLevel();
+		if (currentWLevel == waterError)
+		{
+			// Can't go on with incorrect data.
+			return incorrectWaterLevel;
+		}
+	} while (currentWLevel != low && !emergency);
+
+	if (currentWLevel != low)
+	{
+		return interruptReceived;
+	}
+	else
+	{
+		// After finishing the process, close all valves.
+		if (!closeValves(left))
+		{
+			return noAckReceived;
+		}
+		
+		return success;
+	}
+}
+
 int Sluice::start()
 {
+	WaterLevel currentWLevel = cHandler.getWaterLevel();
 	if (!emergency)
 	{
-		WaterLevel currentWLevel = cHandler.getWaterLevel();
 		int rtnval;
 
 		switch(currentWLevel)
@@ -127,7 +228,7 @@ int Sluice::start()
 				if (cHandler.getDoorState(left) == doorOpen)
 				{
 					rtnval = leftDoor.closeDoor();
-					if (!(rtnval == success))
+					if (rtnval != success)
 					{
 						// Don't continue if we can't close the door.
 						return rtnval;
@@ -135,112 +236,35 @@ int Sluice::start()
 				}
 				if (cHandler.getDoorState(left) == doorClosed || cHandler.getDoorState(left) == doorLocked)
 				{
-					do
-					{
-						currentWLevel = cHandler.getWaterLevel();
-						switch(currentWLevel)
-						{
-							case low:
-								if(!rightDoor.bottomValves.getValveRowOpened())
-								{
-									if (!rightDoor.bottomValves.openValveRow())
-									{
-										return noAckReceived;
-									}
-								}
-								break;
-							case belowValve2:
-								// Can't use one case for two possiblities, but these actually have the same consequences.
-								if(!rightDoor.bottomValves.getValveRowOpened())
-								{
-									if (!rightDoor.bottomValves.openValveRow())
-									{
-										return noAckReceived;
-									}
-								}
-								break;
-							case aboveValve2:
-								if(!rightDoor.middleValves.getValveRowOpened())
-								{
-									if (!rightDoor.middleValves.openValveRow())
-									{
-										return noAckReceived;
-									}
-								}
-								break;
-							case aboveValve3:
-								if(!rightDoor.topValves.getValveRowOpened())
-								{
-									if (!rightDoor.topValves.openValveRow())
-									{
-										return noAckReceived;
-									}
-								}
-								break;
-							case high:
-								// Nothing to do here, about to break out of the while loop.
-								break;
-							case waterError:
-								// Can't go on with incorrect data.
-								return incorrectWaterLevel;
-						}
-					} while (currentWLevel != high && !emergency);
-
-					if (currentWLevel != high)
-					{
-						return interruptReceived;
-					}
-					else
-					{
-						// After finishing the process, close all valves.
-						if (!closeValves(right))
-						{
-							return noAckReceived;
-						}
-
-						return success;
-					}
-
+					return sluiceUp(currentWLevel);
+				}
+				else
+				{
+					return incorrectDoorState; // Door is not in a state where sluicing can occur.
 				}
 				break;
+
 			case high:
 				stateBeforeEmergency = sluicingDown;
 				if (cHandler.getDoorState(right) == doorOpen)
 				{
 					rtnval = rightDoor.closeDoor();
-					if (!(rtnval == success))
+					if (rtnval != success)
 					{
 						// Don't continue if we can't close the door.
 						return rtnval;
 					}
 				}
 
-				leftDoor.bottomValves.openValveRow();
-
-				do
+				if (cHandler.getDoorState(right) == doorClosed || cHandler.getDoorState(right) == doorLocked)
 				{
-					currentWLevel = cHandler.getWaterLevel();
-					if (currentWLevel == waterError)
-					{
-						// Can't go on with incorrect data.
-						return incorrectWaterLevel;
-					}
-				} while (currentWLevel != low && !emergency);
-
-				if (currentWLevel != low)
-				{
-					return interruptReceived;
+					return sluiceDown(currentWLevel);
 				}
 				else
 				{
-					// After finishing the process, close all valves.
-					if (!closeValves(left))
-					{
-						return noAckReceived;
-					}
-					
-					return success;
+					return incorrectDoorState; // Door is not in a state where sluicing can occur.
 				}
+
 				break;
 			default:
 				// Can't start moving a boat that can't possibly have entered.
@@ -251,13 +275,14 @@ int Sluice::start()
 	{
 		// There was an emergency, which means there should be an old state to restore to.
 
+		// TODO: test if any of this works
 		if (stateBeforeEmergency == sluicingUp)
 		{
-
+			return sluiceUp(currentWLevel);
 		}
 		else if (stateBeforeEmergency == sluicingDown)
 		{
-
+			return sluiceDown(currentWLevel);
 		}
 		else
 		{
@@ -271,6 +296,7 @@ int Sluice::start()
 
 int Sluice::allowEntry()
 {
+	// TODO: is it necessary to remember which side was being opened? *doesn't seem like it, there are no arguments being passed*
 	WaterLevel currentWLevel = cHandler.getWaterLevel();
 	if (currentWLevel == low)
 	{
@@ -290,6 +316,7 @@ int Sluice::allowEntry()
 
 int Sluice::allowExit()
 {
+	// TODO: is it necessary to remember which side was being opened? *doesn't seem like it, there are no arguments being passed*
 	WaterLevel currentWLevel = cHandler.getWaterLevel();
 	if (currentWLevel == low)
 	{

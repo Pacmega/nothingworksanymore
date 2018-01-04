@@ -346,9 +346,9 @@ void Door::stopValves()
 		savedState.middleValveOpen = middleValves.getValveRowOpened();
 		savedState.bottomValveOpen = bottomValves.getValveRowOpened();
 
-		std::cout << "topValveOpen: " << savedState.topValveOpen << std::endl;
-		std::cout << "middleValveOpen: " << savedState.middleValveOpen << std::endl;
-		std::cout << "bottomValveOpen: " << savedState.bottomValveOpen << std::endl;
+		std::cout << "[DBG] topValveOpen saved: " << savedState.topValveOpen << std::endl;
+		std::cout << "[DBG] middleValveOpen saved: " << savedState.middleValveOpen << std::endl;
+		std::cout << "[DBG] bottomValveOpen saved: " << savedState.bottomValveOpen << std::endl;
 
 		if (savedState.topValveOpen)
 		{
@@ -367,17 +367,22 @@ void Door::stopValves()
 	{
 		// Reopen valves that were open before the stop.
 
+		std::cout << "[DBG] topValveOpen restoring: " << savedState.topValveOpen << std::endl;
+		std::cout << "[DBG] middleValveOpen restoring: " << savedState.middleValveOpen << std::endl;
+		std::cout << "[DBG] bottomValveOpen restoring: " << savedState.bottomValveOpen << std::endl;
+
+		// TODO: row 2 and 1 closed instead of opened, does changing that fix anything? (check)
 		if (savedState.topValveOpen)
 		{
 			cHandler->valveOpen(side, 3);
 		}
 		if (savedState.middleValveOpen)
 		{
-			cHandler->valveClose(side, 2);
+			cHandler->valveOpen(side, 2);
 		}
 		if (savedState.bottomValveOpen)
 		{
-			cHandler->valveClose(side, 1);
+			cHandler->valveOpen(side, 1);
 		}
 	}
 }

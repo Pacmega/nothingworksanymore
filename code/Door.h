@@ -40,6 +40,7 @@ public:
 	int closeDoor();
 	int stopDoor();
 
+	// TODO: should savedState be public?
 	savedDoor savedState;
 	ValveRow topValves;
 	ValveRow middleValves;
