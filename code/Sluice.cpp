@@ -11,7 +11,8 @@ Sluice::Sluice(int port)
 	, leftDoor(&cHandler, (port==5557) ? fastLock : noLock, left)
 	, rightDoor(&cHandler, (port==5557) ? fastLock : noLock, right)
 {
-
+	emergency = false;
+	stateBeforeEmergency = waitingForCommand;
 }
 
 Sluice::~Sluice()
@@ -56,7 +57,12 @@ void Sluice::passInterrupt()
 			case allowingExitRight:
 				allowExit();
 				break;
+			case waitingForCommand:
+				// Do nothing.
+				break;
 		}
+
+		emergency = false;
 	}
 }
 
@@ -127,6 +133,7 @@ int Sluice::sluiceUp(WaterLevel currentWLevel)
 				{
 					if (!rightDoor.bottomValves.openValveRow())
 					{
+						stateBeforeEmergency = waitingForCommand;
 						return noAckReceived;
 					}
 				}
@@ -137,6 +144,7 @@ int Sluice::sluiceUp(WaterLevel currentWLevel)
 				{
 					if (!rightDoor.bottomValves.openValveRow())
 					{
+						stateBeforeEmergency = waitingForCommand;
 						return noAckReceived;
 					}
 				}
@@ -146,6 +154,7 @@ int Sluice::sluiceUp(WaterLevel currentWLevel)
 				{
 					if (!rightDoor.middleValves.openValveRow())
 					{
+						stateBeforeEmergency = waitingForCommand;
 						return noAckReceived;
 					}
 				}
@@ -155,6 +164,7 @@ int Sluice::sluiceUp(WaterLevel currentWLevel)
 				{
 					if (!rightDoor.topValves.openValveRow())
 					{
+						stateBeforeEmergency = waitingForCommand;
 						return noAckReceived;
 					}
 				}
@@ -168,7 +178,7 @@ int Sluice::sluiceUp(WaterLevel currentWLevel)
 		}
 	} while (currentWLevel != high && !emergency);
 
-	if (currentWLevel != high)
+	if (emergency)
 	{
 		return interruptReceived;
 	}
@@ -177,9 +187,11 @@ int Sluice::sluiceUp(WaterLevel currentWLevel)
 		// After finishing the process, close all valves.
 		if (!closeValves(right))
 		{
+			stateBeforeEmergency = waitingForCommand;
 			return noAckReceived;
 		}
 
+		stateBeforeEmergency = waitingForCommand;
 		return success;
 	}
 }
@@ -198,7 +210,7 @@ int Sluice::sluiceDown(WaterLevel currentWLevel)
 		}
 	} while (currentWLevel != low && !emergency);
 
-	if (currentWLevel != low)
+	if (emergency)
 	{
 		return interruptReceived;
 	}
@@ -216,9 +228,11 @@ int Sluice::sluiceDown(WaterLevel currentWLevel)
 
 int Sluice::start()
 {
+	// std::cout << "[DBG] Start called" << std::endl;
 	WaterLevel currentWLevel = cHandler.getWaterLevel();
 	if (!emergency)
 	{
+		// std::cout << "[DBG] No emergency active." << std::endl;
 		int rtnval;
 
 		switch(currentWLevel)
@@ -241,6 +255,7 @@ int Sluice::start()
 				}
 				else
 				{
+					stateBeforeEmergency = waitingForCommand;
 					return incorrectDoorState; // Door is not in a state where sluicing can occur.
 				}
 				break;
@@ -263,6 +278,7 @@ int Sluice::start()
 				}
 				else
 				{
+					stateBeforeEmergency = waitingForCommand;
 					return incorrectDoorState; // Door is not in a state where sluicing can occur.
 				}
 
@@ -274,15 +290,18 @@ int Sluice::start()
 	}
 	else
 	{
+		// std::cout << "[DBG] REEEEEEE." << std::endl;
 		// There was an emergency, which means there should be an old state to restore to.
 
 		// TODO: test if any of this works
 		if (stateBeforeEmergency == sluicingUp)
 		{
+			// std::cout << "[DBG] Restoring sluice UP." << std::endl;
 			return sluiceUp(currentWLevel);
 		}
 		else if (stateBeforeEmergency == sluicingDown)
 		{
+			// std::cout << "[DBG] Restoring sluice DOWN." << std::endl;
 			return sluiceDown(currentWLevel);
 		}
 		else
@@ -302,12 +321,16 @@ int Sluice::allowEntry()
 	if (currentWLevel == low)
 	{
 		stateBeforeEmergency = allowingEntryLeft;
-		return leftDoor.allowEntry();
+		int rtnval = leftDoor.allowEntry();
+		stateBeforeEmergency = waitingForCommand;
+		return rtnval;
 	}
 	else if (currentWLevel == high)
 	{
 		stateBeforeEmergency = allowingEntryRight;
-		return rightDoor.allowEntry();
+		int rtnval = rightDoor.allowEntry();
+		stateBeforeEmergency = waitingForCommand;
+		return rtnval;
 	}
 	else
 	{

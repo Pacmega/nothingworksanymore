@@ -29,6 +29,7 @@ public:
 private:
 	SimulationCommunicator simulation;
 	char* receivedMessage;
+	DoorState interpretDoorState();
 };
 
 #endif

@@ -17,24 +17,10 @@ CommunicationHandler::~CommunicationHandler()
 
 }
 
-DoorState CommunicationHandler::getDoorState(DoorSide side)
+DoorState CommunicationHandler::interpretDoorState()
 {
 	DoorState dState = doorStateError;
-	const char* messageToSend;
 
-	if (side == left)
-	{
-		messageToSend = GetDoorLeft;
-	}
-	else // side == right
-	{
-		messageToSend = GetDoorRight;
-	}
-
-	// std::cout << "[DBG] Message to send: " << messageToSend << std::endl;
-	receivedMessage = simulation.sendMessage(messageToSend);
-	
-	// Switch cases aren't possible for strings sadly.
 	if (strcmp(receivedMessage, "doorLocked") == 0)
 	{
 		dState = doorLocked;
@@ -62,6 +48,35 @@ DoorState CommunicationHandler::getDoorState(DoorSide side)
 	else if (strcmp(receivedMessage, "motorDamage") == 0)
 	{
 		dState = motorDamage;
+	}
+
+	return dState;
+}
+
+DoorState CommunicationHandler::getDoorState(DoorSide side)
+{
+	DoorState dState = doorStateError;
+	const char* messageToSend;
+
+	if (side == left)
+	{
+		messageToSend = GetDoorLeft;
+	}
+	else // side == right
+	{
+		messageToSend = GetDoorRight;
+	}
+
+	// // std::cout << "[DBG] Message to send: " << messageToSend << std::endl;
+	receivedMessage = simulation.sendMessage(messageToSend);
+	dState = interpretDoorState();
+
+	if (dState == doorStateError)
+	{
+		// // std::cout << "[DBG] Nonsense received. Trying again." << std::endl;
+		receivedMessage = simulation.sendMessage(messageToSend);
+		dState = interpretDoorState();
+		// // std::cout << "[DBG] State received from getDoorState the second time: " << dState << std::endl;
 	}
 
 	return dState;
@@ -210,7 +225,16 @@ bool CommunicationHandler::getValveOpened(DoorSide side, int row)
 		}
 	}
 
+	// // std::cout << "[DBG] Message sent to getValveOpened: " << messageToSend << std::endl;
 	receivedMessage = simulation.sendMessage(messageToSend);
+	// // std::cout << "[DBG] Message received from getValveOpened: " << receivedMessage << std::endl;
+
+	if (strcmp(receivedMessage, "open") != 0 && strcmp(receivedMessage, "closed") != 0)
+	{
+		// std::cout << "[DBG] Nonsense received. Trying again." << std::endl;
+		receivedMessage = simulation.sendMessage(messageToSend);
+		// std::cout << "[DBG] Message received from getValveOpened the second time: " << receivedMessage << std::endl;
+	}
 
 	if (strcmp(receivedMessage, "open") == 0)
 	{
@@ -223,6 +247,7 @@ bool CommunicationHandler::getValveOpened(DoorSide side, int row)
 bool CommunicationHandler::valveOpen(DoorSide side, int row)
 {
 	// Valves don't break when opened while already open, so no need to check.
+	const char* messageToSend;
 	
 	if (row >= 1 && row <= 3)
 	{
@@ -232,13 +257,13 @@ bool CommunicationHandler::valveOpen(DoorSide side, int row)
 				switch(row)
 				{
 					case 1:
-						receivedMessage = simulation.sendMessage(DoorLeftOpenBottomValve);
+						messageToSend = DoorLeftOpenBottomValve;
 						break;
 					case 2:
-						receivedMessage = simulation.sendMessage(DoorLeftOpenMiddleValve);
+						messageToSend = DoorLeftOpenMiddleValve;
 						break;
 					case 3:
-						receivedMessage = simulation.sendMessage(DoorLeftOpenTopValve);
+						messageToSend = DoorLeftOpenTopValve;
 						break;
 				}
 				break;
@@ -246,21 +271,35 @@ bool CommunicationHandler::valveOpen(DoorSide side, int row)
 				switch(row)
 				{
 					case 1:
-						receivedMessage = simulation.sendMessage(DoorRightOpenBottomValve);
+						messageToSend = DoorRightOpenBottomValve;
 						break;
 					case 2:
-						receivedMessage = simulation.sendMessage(DoorRightOpenMiddleValve);
+						messageToSend = DoorRightOpenMiddleValve;
 						break;
 					case 3:
-						receivedMessage = simulation.sendMessage(DoorRightOpenTopValve);
+						messageToSend = DoorRightOpenTopValve;
 						break;
 				}
 				break;
 		}
 
+		receivedMessage = simulation.sendMessage(messageToSend);
+
 		if (strcmp(receivedMessage, "ack") == 0)
 		{
-			return true; // Valve opened.
+			// It went right the first time.
+			return true;
+		}
+		else
+		{
+			// std::cout << "[DBG] (valveOpen) Nonsense received. Trying again." << std::endl;
+			receivedMessage = simulation.sendMessage(messageToSend);
+			// std::cout << "[DBG] Message received from getValveOpened the second time: " << receivedMessage << std::endl;
+			if (strcmp(receivedMessage, "ack") == 0)
+			{
+				// Second time worked.
+				return true;
+			}
 		}
 	}
 	
@@ -269,7 +308,8 @@ bool CommunicationHandler::valveOpen(DoorSide side, int row)
 
 bool CommunicationHandler::valveClose(DoorSide side, int row)
 {
-	
+	const char* messageToSend;
+
 	// Valves don't break when closed while already closed, so no need to check.
 	
 	if (row >= 1 && row <= 3)
@@ -280,13 +320,13 @@ bool CommunicationHandler::valveClose(DoorSide side, int row)
 				switch(row)
 				{
 					case 1:
-						receivedMessage = simulation.sendMessage(DoorLeftCloseBottomValve);
+						messageToSend = DoorLeftCloseBottomValve;
 						break;
 					case 2:
-						receivedMessage = simulation.sendMessage(DoorLeftCloseMiddleValve);
+						messageToSend = DoorLeftCloseMiddleValve;
 						break;
 					case 3:
-						receivedMessage = simulation.sendMessage(DoorLeftCloseTopValve);
+						messageToSend = DoorLeftCloseTopValve;
 						break;
 				}
 				break;
@@ -294,21 +334,35 @@ bool CommunicationHandler::valveClose(DoorSide side, int row)
 				switch(row)
 				{
 					case 1:
-						receivedMessage = simulation.sendMessage(DoorRightCloseBottomValve);
+						messageToSend = DoorRightCloseBottomValve;
 						break;
 					case 2:
-						receivedMessage = simulation.sendMessage(DoorRightCloseMiddleValve);
+						messageToSend = DoorRightCloseMiddleValve;
 						break;
 					case 3:
-						receivedMessage = simulation.sendMessage(DoorRightCloseTopValve);
+						messageToSend = DoorRightCloseTopValve;
 						break;
 				}
 				break;
 		}
 
+		receivedMessage = simulation.sendMessage(messageToSend);
+
 		if (strcmp(receivedMessage, "ack") == 0)
 		{
-			return true; // Valve closed.
+			// It went right the first time.
+			return true;
+		}
+		else
+		{
+			// std::cout << "[DBG] (valveClose) Nonsense received. Trying again." << std::endl;
+			receivedMessage = simulation.sendMessage(messageToSend);
+			// std::cout << "[DBG] Message received from getValveOpened the second time: " << receivedMessage << std::endl;
+			if (strcmp(receivedMessage, "ack") == 0)
+			{
+				// Second time worked.
+				return true;
+			}
 		}
 	}
 	
@@ -351,20 +405,14 @@ int CommunicationHandler::redLight(int lightLocation)
 			{
 				return success; // Success
 			}
-			else
-			{
-				return noAckReceived; // Only one of the lights was changed
-			}
-		}
-		else
-		{
-			return noAckReceived; // None of the lights were changed.
 		}
 	}
 	else
 	{
 		return invalidLightLocation; // Invalid lightLocation was passed
 	}
+
+	return noAckReceived;
 }
 
 int CommunicationHandler::greenLight(int lightLocation)
@@ -445,9 +493,6 @@ LightState CommunicationHandler::getLightState(int lightLocation)
 		std::string redLightReceived = simulation.sendMessage(redLightMessage);
 		std::string greenLightReceived = simulation.sendMessage(greenLightMessage);
 
-		// std::cout << "Red light state: " << redLightReceived << std::endl;
-		// std::cout << "Green light state: " << greenLightReceived << std::endl;
-
 		if (redLightReceived == "on" && greenLightReceived == "off")
 		{
 			lState = redLightOn;
@@ -490,10 +535,3 @@ WaterLevel CommunicationHandler::getWaterLevel()
 
 	return wLevel;
 }
-
-// int main(int argc, char const *argv[])
-// {
-// 	CommunicationHandler henk(5555);
-// 	std::cout << henk.getDoorState(left) << std::endl;
-// 	return 0;
-// }

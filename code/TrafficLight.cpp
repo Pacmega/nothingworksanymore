@@ -53,10 +53,10 @@ int TrafficLight::greenLight()
     switch(getLightState())
     {
         case greenLightOn:
-            // std::cout << "[DBG] GreenLight on " << std::endl;
+            // // std::cout << "[DBG] GreenLight on " << std::endl;
             return success; // Done. Nothing to change.
         case redLightOn:
-            // std::cout << "[DBG] GreenLight being turned on" << std::endl;
+            // // std::cout << "[DBG] GreenLight being turned on" << std::endl;
             switch (cHandler->greenLight(location))
             {
                 case 0:

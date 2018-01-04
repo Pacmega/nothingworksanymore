@@ -34,11 +34,14 @@ void Door::interruptReaction()
 		// No interrupt was caught yet, OHSHITPANIC
 		interruptCaught = true;
 		stopDoor();
+		std::cout << "Did a door open?" << std::endl;
 	}
 	else
 	{
-		interruptCaught = false; // Set up for another emergency stop later on
 		stopDoor();
+		resetSavedState();
+		interruptCaught = false; // Set up for another emergency stop later on
+		std::cout << "Why the fuck am I opening a door?" << std::endl;
 	}
 }
 
@@ -104,13 +107,13 @@ int Door::allowEntry()
 
 	if (currentState == doorOpen)
 	{
-		// std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door was open)\n";
+		// // std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door was open)\n";
 		return lightOutside.greenLight();
 	}
 	else if (currentState == doorClosed || currentState == doorLocked || currentState == doorStopped)
 	{
-		// std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
-		// std::cout << "[DBG] Got door type " << type << std::endl;
+		// // std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
+		// // std::cout << "[DBG] Got door type " << type << std::endl;
 		rtnval = openDoor();
 		switch (rtnval)
 		// Because greenLight has its own return values, we need to be change
@@ -118,7 +121,7 @@ int Door::allowEntry()
 		{
 			case success:
 				// Door has been opened
-				// std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door has been opened)\n";
+				// // std::cout << "[DBG] Door::allowEntry - lightOutside::greenLight (door has been opened)\n";
 				return lightOutside.greenLight();
 			default:
 				// Unable to open the door, return the error code
@@ -141,8 +144,8 @@ int Door::openDoor()
 	// while the right door can only be opened when waterLevel = high.
 
 	WaterLevel currentWLevel = cHandler->getWaterLevel();
-	// std::cout << "[DBG] Door side: " << side << std::endl;
-	// std::cout << "[DBG] Water level: " << currentWLevel << std::endl;
+	// // std::cout << "[DBG] Door side: " << side << std::endl;
+	// // std::cout << "[DBG] Water level: " << currentWLevel << std::endl;
 	if (!((side == left && currentWLevel == low) || (side == right && currentWLevel == high)))
 	{
 		// The water is not at the right level to open the left door,
@@ -150,8 +153,8 @@ int Door::openDoor()
 		return incorrectWaterLevel; // Water level invalid for opening door
 	}
 
-	// std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
-	// std::cout << "[DBG] Got door type " << type << std::endl;
+	// // std::cout << "[DBG] Looking for door type " << fastLock << std::endl;
+	// // std::cout << "[DBG] Got door type " << type << std::endl;
 
 	if (type == fastLock || cHandler->getDoorState(side) == doorLocked)
 	{
@@ -229,15 +232,24 @@ int Door::closeDoor()
 	// Check if any valves are open, can't close the door with open valves.
 	if (topValves.getValveRowOpened())
 	{
-		topValves.closeValveRow();
+		if(!topValves.closeValveRow())
+		{
+			return noAckReceived; // Message was not acknowledged by the simulator
+		}
 	}
-	if (topValves.getValveRowOpened())
+	if (middleValves.getValveRowOpened())
 	{
-		middleValves.closeValveRow();
+		if(!middleValves.closeValveRow())
+		{
+			return noAckReceived; // Message was not acknowledged by the simulator
+		}
 	}
-	if (topValves.getValveRowOpened())
+	if (bottomValves.getValveRowOpened())
 	{
-		bottomValves.closeValveRow();
+		if(!bottomValves.closeValveRow())
+		{
+			return noAckReceived; // Message was not acknowledged by the simulator
+		}
 	}
 
 	messageReceived = cHandler->closeDoor(side);
@@ -262,15 +274,6 @@ int Door::closeDoor()
 		currentState = cHandler->getDoorState(side);
 	} while (!interruptCaught && currentState != doorClosed);
 
-	if (currentState != doorClosed)
-	{
-		return interruptReceived; // An interrupt was received
-	}
-	else
-	{
-		return success; // Door opened
-	}
-
 	if (type == fastLock)
 	{
 		// Door should be locked
@@ -282,6 +285,15 @@ int Door::closeDoor()
 		}
 		// Door is locked
 	}
+
+	if (currentState != doorClosed)
+	{
+		return interruptReceived; // An interrupt was received
+	}
+	else
+	{
+		return success; // Door opened
+	}
 }
 
 int Door::stopDoor()
@@ -292,6 +304,7 @@ int Door::stopDoor()
 		if (currentState == doorLocked || currentState == doorClosed)
 		{
 			// The door is closed, but valves may be open.
+			// std::cout << "[DBG] Saved door state: " << currentState << std::endl;
 			savedState.savedDoorState = currentState;
 			stopValves();
 		}
@@ -319,7 +332,7 @@ int Door::stopDoor()
 			stopValves();
 		}
 		else if (savedState.savedDoorState == doorOpening)
-		{
+		{ 
 			// The door was in the process of opening.
 			openDoor();
 		}
@@ -346,9 +359,9 @@ void Door::stopValves()
 		savedState.middleValveOpen = middleValves.getValveRowOpened();
 		savedState.bottomValveOpen = bottomValves.getValveRowOpened();
 
-		std::cout << "[DBG] topValveOpen saved: " << savedState.topValveOpen << std::endl;
-		std::cout << "[DBG] middleValveOpen saved: " << savedState.middleValveOpen << std::endl;
-		std::cout << "[DBG] bottomValveOpen saved: " << savedState.bottomValveOpen << std::endl;
+		// std::cout << "[DBG] topValveOpen saved: " << savedState.topValveOpen << std::endl;
+		// std::cout << "[DBG] middleValveOpen saved: " << savedState.middleValveOpen << std::endl;
+		// std::cout << "[DBG] bottomValveOpen saved: " << savedState.bottomValveOpen << std::endl;
 
 		if (savedState.topValveOpen)
 		{
@@ -367,22 +380,22 @@ void Door::stopValves()
 	{
 		// Reopen valves that were open before the stop.
 
-		std::cout << "[DBG] topValveOpen restoring: " << savedState.topValveOpen << std::endl;
-		std::cout << "[DBG] middleValveOpen restoring: " << savedState.middleValveOpen << std::endl;
-		std::cout << "[DBG] bottomValveOpen restoring: " << savedState.bottomValveOpen << std::endl;
+		// std::cout << "[DBG] topValveOpen restoring: " << savedState.topValveOpen << std::endl;
+		// std::cout << "[DBG] middleValveOpen restoring: " << savedState.middleValveOpen << std::endl;
+		// std::cout << "[DBG] bottomValveOpen restoring: " << savedState.bottomValveOpen << std::endl;
 
 		// TODO: row 2 and 1 closed instead of opened, does changing that fix anything? (check)
 		if (savedState.topValveOpen)
 		{
-			cHandler->valveOpen(side, 3);
+			topValves.openValveRow();
 		}
 		if (savedState.middleValveOpen)
 		{
-			cHandler->valveOpen(side, 2);
+			middleValves.openValveRow();
 		}
 		if (savedState.bottomValveOpen)
 		{
-			cHandler->valveOpen(side, 1);
+			bottomValves.openValveRow();
 		}
 	}
 }

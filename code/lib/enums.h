@@ -37,7 +37,8 @@ enum SluiceState
 	allowingExitLeft,
 	allowingExitRight,
 	sluicingUp,
-	sluicingDown
+	sluicingDown,
+	waitingForCommand
 };
 
 enum DoorType
